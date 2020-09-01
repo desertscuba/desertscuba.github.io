@@ -1,0 +1,73 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <title>Making your first Phaser 3 Game - Part 1</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+    var config = {
+        type: Phaser.AUTO,
+        width: 970,
+        height: 686,
+        scene: {
+            preload: preload,
+            create: create,
+            update: update
+        }
+    };
+
+    var game = new Phaser.Game(config);
+
+    function preload ()
+    {
+
+        this.load.audio('song', 'assets/game-over.mp3');
+        this.load.image('sky', 'assets/sky.png');
+        this.load.image('mountains', 'assets/mountains.png')
+        this.load.image('skyline-back', 'assets/skyline-back.png');
+		this.load.image('skyline-mid', 'assets/skyline-mid.png');
+		this.load.image('skyline-front', 'assets/skyline-front.png'); 
+        this.load.image('ground', 'assets/ground.png'); 
+
+    }
+
+    function create ()
+    {
+
+        var music = this.sound.add('song');
+        music.play();
+        this.add.image(0, 0, 'sky').setOrigin(0,0);
+
+
+        this.mountains = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'mountains').setOrigin(0, 0);
+        this.skylineBack = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'skyline-back').setOrigin(0, 0);
+        //this.skylineMid= this.add.tileSprite(0, 0, game.config.width, game.config.height, 'skyline-mid').setOrigin(0, 0);
+        this.skylineFront = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'skyline-front').setOrigin(0, 0);
+        this.ground = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'ground').setOrigin(0, 0);
+
+        
+    }
+
+    function update ()
+    {
+        this.mountains.tilePositionX += 0.1;
+        this.skylineBack.tilePositionX += 0.2;
+        //this.skylineMid.tilePositionX += 0.4;
+        this.skylineFront.tilePositionX += 0.3;  
+        this.ground.tilePositionX += 0.6;  
+
+    }
+
+</script>
+
+</body>
+</html>
