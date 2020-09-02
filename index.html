@@ -22,13 +22,12 @@
             preload: preload,
             create: create,
             update: update
-        },
-        scale: {
-            orientation: Phaser.Scale.Orientation.LANDSCAPE
         }
     };
 
     var game = new Phaser.Game(config);
+    var orientation = scene.scale.orientation;
+    scene.scale.lockOrientation('landscape');
 
     function preload ()
     {
