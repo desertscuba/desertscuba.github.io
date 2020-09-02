@@ -18,6 +18,13 @@
         type: Phaser.AUTO,
         width: 970,
         height: 686,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: { y: 300 },
+                debug: false
+            }
+        },
         scene: {
             preload: preload,
             create: create,
@@ -26,6 +33,7 @@
     };
 
     var game = new Phaser.Game(config);
+    var player;
     
 
     function preload ()
@@ -38,12 +46,14 @@
 		this.load.image('skyline-mid', 'assets/skyline-mid.png');
 		this.load.image('skyline-front', 'assets/skyline-front.png'); 
         this.load.image('ground', 'assets/ground.png'); 
+        this.load.image('dude', 'assets/ninja-dude-0.png'); 
+
 
     }
 
     function create ()
     {
-        var player = this.physics.add.sprite(100, 450, 'assets/ninja-dude-0.png');
+        player = this.physics.add.sprite(100, 450, 'dude');
 
 
         var music = this.sound.add('song');
