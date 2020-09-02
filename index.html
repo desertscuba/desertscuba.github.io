@@ -26,7 +26,6 @@
     };
 
     var game = new Phaser.Game(config);
-    var orientation = scene.scale.orientation;
     
 
     function preload ()
@@ -44,7 +43,6 @@
 
     function create ()
     {
-        scene.scale.lockOrientation('landscape');
         player = this.physics.add.sprite(100, 450, 'assets/ninja-dude-0.png');
 
 
