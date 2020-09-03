@@ -25,6 +25,9 @@
                 debug: false
             }
         },
+        audio: {
+        disableWebAudio: true
+        },
         scene: {
             preload: preload,
             create: create,
@@ -34,6 +37,8 @@
 
     var game = new Phaser.Game(config);
     var player;
+    var platforms;
+    var cursors;
     
 
     function preload ()
@@ -45,16 +50,15 @@
         this.load.image('skyline-back', 'assets/skyline-back.png');
 		this.load.image('skyline-mid', 'assets/skyline-mid.png');
 		this.load.image('skyline-front', 'assets/skyline-front.png'); 
-        this.load.image('ground', 'assets/ground.png'); 
-        this.load.image('dude', 'assets/ninja-dude-0.png'); 
-
+        this.load.image('ground', 'assets/rsz_1ground.png'); 
+        this.load.spritesheet('dude', 'assets/spritesheet.png', { frameWidth: 34, frameHeight: 34 });
 
     }
 
     function create ()
     {
-        player = this.physics.add.sprite(100, 450, 'dude');
 
+        
 
         var music = this.sound.add('song');
         music.play();
@@ -65,18 +69,40 @@
         this.skylineBack = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'skyline-back').setOrigin(0, 0);
         //this.skylineMid= this.add.tileSprite(0, 0, game.config.width, game.config.height, 'skyline-mid').setOrigin(0, 0);
         this.skylineFront = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'skyline-front').setOrigin(0, 0);
-        this.ground = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'ground').setOrigin(0, 0);
+        this.ground = this.add.tileSprite(0, game.config.height - 101, game.config.width, 101, 'ground').setOrigin(0, 0);
 
-        
+        this.physics.add.existing(this.ground, true);
+
+        player = this.physics.add.sprite(100, 450, 'dude').setScale(1.5);
+        player.setBounce(0.2);
+        player.setCollideWorldBounds(true);
+
+        this.anims.create({
+            key: 'right',
+            frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 2 }),
+            frameRate: 7.5,
+            repeat: -1
+        });
+        player.anims.play('right');
+
+        this.physics.add.collider(player, this.ground);
+        cursors = this.input.keyboard.createCursorKeys();
+
     }
 
     function update ()
     {
+        
+
         this.mountains.tilePositionX += 0.2;
         this.skylineBack.tilePositionX += 0.4;
         this.skylineFront.tilePositionX += 0.7;  
-        this.ground.tilePositionX += 3.0;  
+        this.ground.tilePositionX += 1.4;  
 
+        if (cursors.up.isDown && player.body.touching.down)
+        {
+            player.setVelocityY(-330);
+        }
     }
 
 </script>
