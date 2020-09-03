@@ -39,6 +39,8 @@
     var player;
     var platforms;
     var cursors;
+    var text;
+    var timedEvent;
     
 
     function preload ()
@@ -88,6 +90,12 @@
         this.physics.add.collider(player, this.ground);
         cursors = this.input.keyboard.createCursorKeys();
 
+        this.initialTime = 180;
+
+        text = this.add.text(32, 32, formatTime(this.initialTime));
+
+        timedEvent = this.time.addEvent({ delay: 1000, callback: timerEvent, callbackScope: this, loop: true });
+
     }
 
     function update ()
@@ -102,6 +110,27 @@
         if (cursors.up.isDown && player.body.touching.down)
         {
             player.setVelocityY(-330);
+        }
+    }
+
+    function formatTime(seconds)
+    {
+        var minutes = Math.floor(seconds/60);
+        var partInSeconds = seconds%60;
+        partInSeconds = partInSeconds.toString().padStart(2,'0');
+        return `${minutes}:${partInSeconds}`;
+    }
+
+
+    function timerEvent ()
+    {
+        if (this.initialTime == 0)
+        {
+            this.time.removeAllEvents();
+        } else {
+    
+        this.initialTime -= 1; // One second
+        text.setText(formatTime(this.initialTime));
         }
     }
 
