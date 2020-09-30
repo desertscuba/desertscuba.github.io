@@ -3,14 +3,13 @@
 <head> 
     <meta charset="UTF-8" />
     <title>Game Over</title>
-    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
-    <style type="text/css">
-        body {
-            margin: 0;
-        }
-    </style>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.24.1/dist/phaser.js"></script>
+    
 </head>
-<body>
+ 
+
+<body style="background-color:black;">
+
 
 <script type="text/javascript">
 
@@ -27,6 +26,10 @@
         },
         audio: {
         disableWebAudio: true
+        },
+        scale: {
+            mode: Phaser.Scale.HEIGHT_CONTROLS_WIDTH,
+            autoCenter: Phaser.Scale.CENTER_BOTH,
         },
         scene: {
             preload: preload,
@@ -46,6 +49,8 @@
     function preload ()
     {
 
+        
+
         this.load.audio('song', 'assets/game-over.mp3');
         this.load.image('sky', 'assets/sky.png');
         this.load.image('mountains', 'assets/mountains.png')
@@ -60,12 +65,12 @@
     function create ()
     {
 
-        
-
         var music = this.sound.add('song');
-        music.play();
+        //music.play();
         this.add.image(0, 0, 'sky').setOrigin(0,0);
 
+
+        
 
         this.mountains = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'mountains').setOrigin(0, 0);
         this.skylineBack = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'skyline-back').setOrigin(0, 0);
@@ -73,9 +78,10 @@
         this.skylineFront = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'skyline-front').setOrigin(0, 0);
         this.ground = this.add.tileSprite(0, game.config.height - 101, game.config.width, 101, 'ground').setOrigin(0, 0);
 
+
         this.physics.add.existing(this.ground, true);
 
-        player = this.physics.add.sprite(100, 450, 'dude').setScale(1.5);
+        player = this.physics.add.sprite((game.config.width / 2) - 80, 450, 'dude').setScale(1.5);
         player.setBounce(0.2);
         player.setCollideWorldBounds(true);
 
@@ -92,7 +98,7 @@
 
         this.initialTime = 180;
 
-        text = this.add.text(32, 32, formatTime(this.initialTime));
+        text = this.add.text(game.config.width / 2, 32, formatTime(this.initialTime));
 
         timedEvent = this.time.addEvent({ delay: 1000, callback: timerEvent, callbackScope: this, loop: true });
 
