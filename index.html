@@ -5,6 +5,18 @@
     <title>Game Over</title>
     <script src="//cdn.jsdelivr.net/npm/phaser@3.24.1/dist/phaser.js"></script>
     
+    
+
+
+    <style type="text/css" media="screen, print">
+        @font-face {
+          font-family: "VCR";
+          src: url("assets/VCR_OSD_MONO.ttf") format("truetype");
+        }
+    </style>
+
+    <div style="font-family: VCR;">.</div>
+
 </head>
  
 
@@ -13,134 +25,168 @@
 
 <script type="text/javascript">
 
-    var config = {
-        type: Phaser.AUTO,
-        width: 970,
-        height: 686,
-        physics: {
-            default: 'arcade',
-            arcade: {
-                gravity: { y: 300 },
-                debug: false
+var gameScene = new Phaser.Scene('gameScene');
+var titleScene = new Phaser.Scene('titleScene');
+
+
+        var config = {
+            type: Phaser.AUTO,
+            width: 970,
+            height: 686,
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 800 },
+                    debug: false
+                }
+            },
+            audio: {
+            disableWebAudio: true
+            },
+            scale: {
+                mode: Phaser.Scale.HEIGHT_CONTROLS_WIDTH,
+                autoCenter: Phaser.Scale.CENTER_BOTH,
             }
-        },
-        audio: {
-        disableWebAudio: true
-        },
-        scale: {
-            mode: Phaser.Scale.HEIGHT_CONTROLS_WIDTH,
-            autoCenter: Phaser.Scale.CENTER_BOTH,
-        },
-        scene: {
-            preload: preload,
-            create: create,
-            update: update
-        }
-    };
-
-    var game = new Phaser.Game(config);
-    var player;
-    var platforms;
-    var cursors;
-    var text;
-    var timedEvent;
+        };
     
+        var game = new Phaser.Game(config);
+        var player;
+        var platforms;
+        var cursors;
+        var text;
+        var timedEvent;
+        var mountains;
+        var skylineBack;
+        var skylineMid;
+        var skylineFront;
+        var ground;
+        var playButton;
 
-    function preload ()
-    {
+        game.scene.add('titleScene', titleScene);
+        game.scene.add('gameScene', gameScene);
 
-        
-
-        this.load.audio('song', 'assets/game-over.mp3');
-        this.load.image('sky', 'assets/sky.png');
-        this.load.image('mountains', 'assets/mountains.png')
-        this.load.image('skyline-back', 'assets/skyline-back.png');
-		this.load.image('skyline-mid', 'assets/skyline-mid.png');
-		this.load.image('skyline-front', 'assets/skyline-front.png'); 
-        this.load.image('ground', 'assets/rsz_1ground.png'); 
-        this.load.spritesheet('dude', 'assets/spritesheet.png', { frameWidth: 34, frameHeight: 34 });
-
-    }
-
-    function create ()
-    {
-
-        var music = this.sound.add('song');
-        //music.play();
-        this.add.image(0, 0, 'sky').setOrigin(0,0);
+        game.scene.start('titleScene');
 
 
-        
+        titleScene.preload = function()
+        {
+    
+            this.load.audio('song', 'assets/game-over.mp3');
+            this.load.image('sky', 'assets/Sky2.png');
+            this.load.image('mountains', 'assets/Mountains2.png')
+            this.load.image('skyline-back', 'assets/skyline-back.png');
+		    this.load.image('skyline-mid', 'assets/Mid2.png');
+		    this.load.image('skyline-front', 'assets/Front2.png'); 
+            this.load.image('ground', 'assets/Ground2.png'); 
+            this.load.spritesheet('dude', 'assets/spritesheet.png', { frameWidth: 34, frameHeight: 34 });
+    
+        }
 
-        this.mountains = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'mountains').setOrigin(0, 0);
-        this.skylineBack = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'skyline-back').setOrigin(0, 0);
-        //this.skylineMid= this.add.tileSprite(0, 0, game.config.width, game.config.height, 'skyline-mid').setOrigin(0, 0);
-        this.skylineFront = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'skyline-front').setOrigin(0, 0);
-        this.ground = this.add.tileSprite(0, game.config.height - 101, game.config.width, 101, 'ground').setOrigin(0, 0);
+        titleScene.create = function() {
+
+            this.add.image(0, 0, 'sky').setOrigin(0,0);
+
+            mountains = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'mountains').setOrigin(0, 0);
+            skylineBack = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'skyline-back').setOrigin(0, 0);
+            skylineMid= this.add.tileSprite(0, game.config.height - (362 + 96), game.config.width, 362, 'skyline-mid').setOrigin(0, 0);
+            skylineFront = this.add.tileSprite(0, game.config.height - (232 + 96), game.config.width, 232, 'skyline-front').setOrigin(0, 0);
+            ground = this.add.tileSprite(0, game.config.height - 96, game.config.width, 96, 'ground').setOrigin(0, 0);
+    
+            playButton = this.add.text(game.config.width / 2, 200, 'PLAY', { fontFamily: "VCR", fontSize: '50px'}).setOrigin(0.35, 0.5);
+            playButton.setInteractive({ useHandCursor: true });
+            playButton.on('pointerdown', () => this.scene.launch('gameScene') );
 
 
-        this.physics.add.existing(this.ground, true);
+            
 
-        player = this.physics.add.sprite((game.config.width / 2) - 80, 450, 'dude').setScale(1.5);
-        player.setBounce(0.2);
-        player.setCollideWorldBounds(true);
+        };
 
-        this.anims.create({
-            key: 'right',
-            frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 2 }),
-            frameRate: 7.5,
-            repeat: -1
+        gameScene.create = function()
+        {
+    
+            playButton.visible = false;
+    
+            player = this.physics.add.sprite((game.config.width / 2) - 80, 200, 'dude').setScale(1.5);
+            player.setBounce(0.4);
+            player.setCollideWorldBounds(true);
+
+            var music = this.sound.add('song');
+            music.play();
+
+            this.physics.add.existing(ground, true);
+    
+            this.anims.create({
+                key: 'right',
+                frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 2 }),
+                frameRate: 7.5,
+                repeat: -1
+            });
+
+            this.anims.create({
+            key: 'turn',
+            frames: [ { key: 'dude', frame: 1 } ],
+            frameRate: 20
         });
-        player.anims.play('right');
 
-        this.physics.add.collider(player, this.ground);
-        cursors = this.input.keyboard.createCursorKeys();
-
-        this.initialTime = 180;
-
-        text = this.add.text(game.config.width / 2, 32, formatTime(this.initialTime));
-
-        timedEvent = this.time.addEvent({ delay: 1000, callback: timerEvent, callbackScope: this, loop: true });
-
-    }
-
-    function update ()
-    {
-        
-
-        this.mountains.tilePositionX += 0.2;
-        this.skylineBack.tilePositionX += 0.4;
-        this.skylineFront.tilePositionX += 0.7;  
-        this.ground.tilePositionX += 1.4;  
-
-        if (cursors.up.isDown && player.body.touching.down)
-        {
-            player.setVelocityY(-330);
-        }
-    }
-
-    function formatTime(seconds)
-    {
-        var minutes = Math.floor(seconds/60);
-        var partInSeconds = seconds%60;
-        partInSeconds = partInSeconds.toString().padStart(2,'0');
-        return `${minutes}:${partInSeconds}`;
-    }
-
-
-    function timerEvent ()
-    {
-        if (this.initialTime == 0)
-        {
-            this.time.removeAllEvents();
-        } else {
+            player.anims.play('right');
     
-        this.initialTime -= 1; // One second
-        text.setText(formatTime(this.initialTime));
+            this.physics.add.collider(player, ground);
+            cursors = this.input.keyboard.createCursorKeys();
+    
+            this.initialTime = 180;
+    
+            text = this.add.text(game.config.width / 2, 32, formatTime(this.initialTime), { fontFamily: "VCR" });
+
+
+            timedEvent = this.time.addEvent({ delay: 1000, callback: timerEvent, callbackScope: this, loop: true });
+
+            this.input.on('pointerdown', function(){
+            player.setVelocityY(-400);
+            });
+
+            
+            
+            
         }
-    }
+    
+        
+        gameScene.update = function()
+        {
+            
+    
+            mountains.tilePositionX += 0.2;
+            skylineBack.tilePositionX += 0.4;
+            skylineMid.tilePositionX += 0.5;
+            skylineFront.tilePositionX += 0.7;  
+            ground.tilePositionX += 1.4;  
+    
+        }
+    
+        function formatTime(seconds)
+        {
+            var minutes = Math.floor(seconds/60);
+            var partInSeconds = seconds%60;
+            partInSeconds = partInSeconds.toString().padStart(2,'0');
+            return `${minutes}:${partInSeconds}`;
+        }
+    
+    
+        function timerEvent ()
+        {
+            if (this.initialTime == 0)
+            {
+                this.time.removeAllEvents();
+            } else {
+        
+            this.initialTime -= 1; // One second
+            text.setText(formatTime(this.initialTime));
+            }
+        }
 
-</script>
 
-</body>
-</html>
+    
+    
+    </script>
+    
+    </body>
+    </html>
