@@ -141,13 +141,13 @@ var titleScene = new Phaser.Scene('titleScene');
                 return new Promise(res => setTimeout(res, ms));
                 }
 
-                
+        gameScene.preload = function() {
+            player = this.physics.add.sprite((game.config.width / 2) - 80, 320, 'dude').setScale(1.5);
+        }
 
         gameScene.create = function()
         {
-            player = this.physics.add.sprite((game.config.width / 2) - 80, 320, 'dude').setScale(1.5);
             this.time.addEvent({ delay: 7000, callback: showSky, callbackScope: this, loop: false });
-
             player.setBounce(0.4);
             player.setCollideWorldBounds(true);
 
