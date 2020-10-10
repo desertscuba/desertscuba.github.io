@@ -55,7 +55,8 @@ var titleScene = new Phaser.Scene('titleScene');
             scale: {
                 mode: Phaser.Scale.HEIGHT_CONTROLS_WIDTH,
                 autoCenter: Phaser.Scale.CENTER_BOTH,
-            }
+            },
+            scene: [titleScene, gameScene]
         };
     
         var game = new Phaser.Game(config);
@@ -75,10 +76,8 @@ var titleScene = new Phaser.Scene('titleScene');
         var i = 0;
         var d = 50;
 
-        game.scene.add('titleScene', titleScene);
-        game.scene.add('gameScene', gameScene);
 
-        game.scene.start('titleScene');
+        game.scene.start(titleScene);
 
 
         titleScene.preload = function()
@@ -134,8 +133,8 @@ var titleScene = new Phaser.Scene('titleScene');
 
                 i += 1;
             } else if (pressed == true){
-                this.scene.pause('titleScene');
-                this.scene.launch('gameScene');
+                this.scene.pause(titleScene);
+                this.scene.launch(gameScene);
             }
         }
 
@@ -149,15 +148,16 @@ var titleScene = new Phaser.Scene('titleScene');
         {
 
             
-            this.time.addEvent({ delay: 7000, callback: showSky, callbackScope: this, loop: false });
             
-
+            
             player = this.physics.add.sprite((game.config.width / 2) - 80, 200, 'dude').setScale(1.5);
             player.setBounce(0.4);
             player.setCollideWorldBounds(true);
 
             this.physics.add.existing(ground, true);
             this.physics.add.collider(player, ground);
+
+            this.time.addEvent({ delay: 7000, callback: showSky, callbackScope: this, loop: false });
 
             
             this.anims.create({
@@ -167,17 +167,9 @@ var titleScene = new Phaser.Scene('titleScene');
                 repeat: -1
             });
 
-            this.anims.create({
-            key: 'turn',
-            frames: [ { key: 'dude', frame: 1 } ],
-            frameRate: 20
-        });
 
             player.anims.play('right');
-    
-            
-            cursors = this.input.keyboard.createCursorKeys();
-    
+        
             this.initialTime = 180;
     
             text = this.add.text(game.config.width / 2, 32, formatTime(this.initialTime), { fontFamily: "VCR", fontSize: '16pt' });
