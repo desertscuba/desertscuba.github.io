@@ -117,7 +117,7 @@ var titleScene = new Phaser.Scene('titleScene');
                 titleScene.scene.pause(titleScene);
                 titleScene.scene.launch(gameScene);
             }
-                await timer(16);
+                await timer(32);
         }
             }
             titleSceneUpdate();
@@ -171,7 +171,7 @@ var titleScene = new Phaser.Scene('titleScene');
                 skylineMid.tilePositionX += 0.5;
                 skylineFront.tilePositionX += 0.7;  
                 ground.tilePositionX += 1.4;
-                await timer(16);
+                await timer(32);
                 }
             }
             gameSceneUpdate();
@@ -241,7 +241,7 @@ var titleScene = new Phaser.Scene('titleScene');
             async function fade() {
             while (sky.alpha < 1) {
                 sky.alpha += 0.1;
-                await timer(30);
+                await timer(32);
             };
         }
         fade();
