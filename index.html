@@ -75,6 +75,7 @@ var titleScene = new Phaser.Scene('titleScene');
         var d = 50;
         var loaded = false;
         var waited = false;
+        var title = true;
 
 
         game.scene.start(titleScene);
@@ -100,7 +101,8 @@ var titleScene = new Phaser.Scene('titleScene');
 
         titleScene.create = function() {
 
-            function titleSceneUpdate () {
+            async function titleSceneUpdate() {
+                while (title === true) {
                 if (pressed == true && i < d) {
                 
                 mountains.y -= game.config.height / d;
@@ -111,12 +113,15 @@ var titleScene = new Phaser.Scene('titleScene');
 
                 i += 1;
             } else if (pressed == true){
-                this.scene.pause(titleScene);
-                this.scene.launch(gameScene);
+                title = false;
+                titleScene.scene.pause(titleScene);
+                titleScene.scene.launch(gameScene);
             }
+                await timer(16);
+        }
             }
+            titleSceneUpdate();
 
-            this.time.addEvent({ delay: 16, callback: titleSceneUpdate, callbackScope: this, loop: true });
 
             var music = this.sound.add('song');
 
@@ -159,16 +164,19 @@ var titleScene = new Phaser.Scene('titleScene');
 
         gameScene.create = function()
         {
-            function gameSceneUpdate () {
+            async function gameSceneUpdate () {
+                while (true === true) {
                 mountains.tilePositionX += 0.2;
                 skylineBack.tilePositionX += 0.4;
                 skylineMid.tilePositionX += 0.5;
                 skylineFront.tilePositionX += 0.7;  
-                ground.tilePositionX += 1.4;  
+                ground.tilePositionX += 1.4;
+                await timer(16);
+                }
             }
+            gameSceneUpdate();
 
 
-            this.time.addEvent({ delay: 16, callback: gameSceneUpdate, callbackScope: this, loop: true });
             this.time.addEvent({ delay: 7000, callback: showSky, callbackScope: this, loop: false });
 
             player = this.physics.add.sprite((game.config.width / 2) - 80, 320, 'dude').setScale(1.5);
