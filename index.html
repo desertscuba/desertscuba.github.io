@@ -60,6 +60,7 @@ var titleScene = new Phaser.Scene('titleScene');
         };
     
         var game = new Phaser.Game(config);
+        var music;
         var player;
         var platforms;
         var cursors;
@@ -109,11 +110,13 @@ var titleScene = new Phaser.Scene('titleScene');
             playButton.setInteractive({ useHandCursor: true });
             playButton.on('pointerdown', () => { 
                 
+                music = this.sound.add('song');
+                music.play();
+
                 playButton.visible = false;
                 pressed = true
 
-                var music = this.sound.add('song');
-                music.play();
+                
 
                 
                 
