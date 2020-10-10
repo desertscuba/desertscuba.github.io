@@ -64,12 +64,16 @@ var titleScene = new Phaser.Scene('titleScene');
         var cursors;
         var text;
         var timedEvent;
+        var sky;
         var mountains;
         var skylineBack;
         var skylineMid;
         var skylineFront;
         var ground;
         var playButton;
+        var pressed = false;
+        var i = 0;
+        var d = 50;
 
         game.scene.add('titleScene', titleScene);
         game.scene.add('gameScene', gameScene);
@@ -93,37 +97,69 @@ var titleScene = new Phaser.Scene('titleScene');
 
         titleScene.create = function() {
 
-            this.add.image(0, 0, 'sky').setOrigin(0,0);
+            sky = this.add.image(0, 0, 'sky').setOrigin(0,0);
+            sky.alpha = 0;
 
-            mountains = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'mountains').setOrigin(0, 0);
-            skylineBack = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'skyline-back').setOrigin(0, 0);
-            skylineMid= this.add.tileSprite(0, game.config.height - (362 + 96), game.config.width, 362, 'skyline-mid').setOrigin(0, 0);
-            skylineFront = this.add.tileSprite(0, game.config.height - (232 + 96), game.config.width, 232, 'skyline-front').setOrigin(0, 0);
-            ground = this.add.tileSprite(0, game.config.height - 96, game.config.width, 96, 'ground').setOrigin(0, 0);
+            mountains = this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'mountains').setOrigin(0, 0);
+            skylineBack = this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'skyline-back').setOrigin(0, 0);
+            skylineMid= this.add.tileSprite(0, game.config.height, game.config.width, 362, 'skyline-mid').setOrigin(0, 0);
+            skylineFront = this.add.tileSprite(0, game.config.height, game.config.width, 232, 'skyline-front').setOrigin(0, 0);
+            ground = this.add.tileSprite(0, game.config.height, game.config.width, 96, 'ground').setOrigin(0, 0);
     
             playButton = this.add.text(game.config.width / 2, 200, 'PLAY', { fontFamily: "VCR", fontSize: '50pt'}).setOrigin(0.35, 0.5);
             playButton.setInteractive({ useHandCursor: true });
-            playButton.on('pointerdown', () => this.scene.launch('gameScene') );
+            playButton.on('pointerdown', () => { 
+                
+                playButton.visible = false;
+                pressed = true
 
+                var music = this.sound.add('song');
+                music.play();
 
+                
+                
+            });
             
 
         };
 
+        titleScene.update = function() {
+            if (pressed == true && i < d) {
+                
+                mountains.y -= game.config.height / d;
+                skylineBack.y -= game.config.height / d;
+                skylineMid.y -= (392 + 96) / d;
+                skylineFront.y -= (232 + 96) / d;
+                ground.y -= 96 / d;
+
+                i += 1;
+            } else if (pressed == true){
+                this.scene.pause('titleScene');
+                this.scene.launch('gameScene');
+            }
+        }
+
+        function timer(ms) {
+                return new Promise(res => setTimeout(res, ms));
+                }
+
+                
+
         gameScene.create = function()
         {
-    
-            playButton.visible = false;
-    
+
+            
+            this.time.addEvent({ delay: 7000, callback: showSky, callbackScope: this, loop: false });
+            
+
             player = this.physics.add.sprite((game.config.width / 2) - 80, 200, 'dude').setScale(1.5);
             player.setBounce(0.4);
             player.setCollideWorldBounds(true);
 
-            var music = this.sound.add('song');
-            music.play();
-
             this.physics.add.existing(ground, true);
-    
+            this.physics.add.collider(player, ground);
+
+            
             this.anims.create({
                 key: 'right',
                 frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 2 }),
@@ -139,7 +175,7 @@ var titleScene = new Phaser.Scene('titleScene');
 
             player.anims.play('right');
     
-            this.physics.add.collider(player, ground);
+            
             cursors = this.input.keyboard.createCursorKeys();
     
             this.initialTime = 180;
@@ -190,6 +226,16 @@ var titleScene = new Phaser.Scene('titleScene');
             this.initialTime -= 1; // One second
             text.setText(formatTime(this.initialTime));
             }
+        }
+
+        function showSky () {
+            async function fade() {
+            while (sky.alpha < 1) {
+                sky.alpha += 0.1;
+                await timer(30);
+            };
+        }
+        fade();
         }
 
 
