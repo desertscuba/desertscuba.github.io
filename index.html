@@ -45,7 +45,7 @@ var titleScene = new Phaser.Scene('titleScene');
             physics: {
                 default: 'arcade',
                 arcade: {
-                    gravity: { y: 800 },
+                    gravity: { y: 500 },
                     debug: false
                 }
             },
@@ -97,8 +97,6 @@ var titleScene = new Phaser.Scene('titleScene');
         titleScene.create = function() {
 
             var music = this.sound.add('song');
-            var temp = this.physics.add.sprite((game.config.width / 2) - 80, 200, 'dude').setScale(1.5);
-            temp.visible = false;
 
             sky = this.add.image(0, 0, 'sky').setOrigin(0,0);
             sky.alpha = 0;
@@ -109,7 +107,7 @@ var titleScene = new Phaser.Scene('titleScene');
             skylineFront = this.add.tileSprite(0, game.config.height, game.config.width, 232, 'skyline-front').setOrigin(0, 0);
             ground = this.add.tileSprite(0, game.config.height, game.config.width, 96, 'ground').setOrigin(0, 0);
     
-            playButton = this.add.text(game.config.width / 2, 200, 'PLAY3', { fontFamily: "VCR", fontSize: '50pt'}).setOrigin(0.35, 0.5);
+            playButton = this.add.text(game.config.width / 2, 200, 'PLAY4', { fontFamily: "VCR", fontSize: '50pt'}).setOrigin(0.35, 0.5);
             playButton.setInteractive({ useHandCursor: true });
             playButton.on('pointerdown', () => { 
                
@@ -117,7 +115,6 @@ var titleScene = new Phaser.Scene('titleScene');
                 music.play();
 
                 playButton.visible = false;
-                temp.destroy();
                 
             });
             
@@ -148,16 +145,14 @@ var titleScene = new Phaser.Scene('titleScene');
 
         gameScene.create = function()
         {
+            player = this.physics.add.sprite((game.config.width / 2) - 80, 320, 'dude').setScale(1.5);
+            this.time.addEvent({ delay: 7000, callback: showSky, callbackScope: this, loop: false });
 
-            
-            player = this.physics.add.sprite((game.config.width / 2) - 80, 200, 'dude').setScale(1.5);
             player.setBounce(0.4);
             player.setCollideWorldBounds(true);
 
             this.physics.add.existing(ground, true);
             this.physics.add.collider(player, ground);
-
-            this.time.addEvent({ delay: 7000, callback: showSky, callbackScope: this, loop: false });
 
             
             this.anims.create({
