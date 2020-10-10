@@ -107,15 +107,16 @@ var titleScene = new Phaser.Scene('titleScene');
             skylineFront = this.add.tileSprite(0, game.config.height, game.config.width, 232, 'skyline-front').setOrigin(0, 0);
             ground = this.add.tileSprite(0, game.config.height, game.config.width, 96, 'ground').setOrigin(0, 0);
     
-            playButton = this.add.text(game.config.width / 2, 200, 'PLAY5', { fontFamily: "VCR", fontSize: '50pt'}).setOrigin(0.35, 0.5);
+            playButton = this.add.text(game.config.width / 2, 200, 'PLAY6', { fontFamily: "VCR", fontSize: '50pt'}).setOrigin(0.35, 0.5);
             playButton.setInteractive({ useHandCursor: true });
             playButton.on('pointerdown', () => { 
                
+                if (document.readyState === "complete") {
                 pressed = true;
                 music.play();
 
                 playButton.visible = false;
-                
+                }
             });
             
 
@@ -141,16 +142,14 @@ var titleScene = new Phaser.Scene('titleScene');
                 return new Promise(res => setTimeout(res, ms));
                 }
 
-        gameScene.preload = function() {
-            this.time.addEvent({ delay: 7000, callback: showSky, callbackScope: this, loop: false });
-            player = this.physics.add.sprite((game.config.width / 2) - 80, 320, 'dude').setScale(1.5);
-        }
 
         gameScene.create = function()
         {
+            this.time.addEvent({ delay: 7000, callback: showSky, callbackScope: this, loop: false });
+
+            player = this.physics.add.sprite((game.config.width / 2) - 80, 320, 'dude').setScale(1.5);
             player.setBounce(0.4);
             player.setCollideWorldBounds(true);
-
             this.physics.add.existing(ground, true);
             this.physics.add.collider(player, ground);
 
