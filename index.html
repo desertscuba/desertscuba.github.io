@@ -60,7 +60,6 @@ var titleScene = new Phaser.Scene('titleScene');
         };
     
         var game = new Phaser.Game(config);
-        var music;
         var player;
         var platforms;
         var cursors;
@@ -97,6 +96,10 @@ var titleScene = new Phaser.Scene('titleScene');
 
         titleScene.create = function() {
 
+            var music = this.sound.add('song');
+            var temp = this.physics.add.sprite((game.config.width / 2) - 80, 200, 'dude').setScale(1.5);
+            temp.destroy();
+
             sky = this.add.image(0, 0, 'sky').setOrigin(0,0);
             sky.alpha = 0;
 
@@ -106,18 +109,14 @@ var titleScene = new Phaser.Scene('titleScene');
             skylineFront = this.add.tileSprite(0, game.config.height, game.config.width, 232, 'skyline-front').setOrigin(0, 0);
             ground = this.add.tileSprite(0, game.config.height, game.config.width, 96, 'ground').setOrigin(0, 0);
     
-            playButton = this.add.text(game.config.width / 2, 200, 'PLAY', { fontFamily: "VCR", fontSize: '50pt'}).setOrigin(0.35, 0.5);
+            playButton = this.add.text(game.config.width / 2, 200, 'PLAY2', { fontFamily: "VCR", fontSize: '50pt'}).setOrigin(0.35, 0.5);
             playButton.setInteractive({ useHandCursor: true });
             playButton.on('pointerdown', () => { 
-                
-                music = this.sound.add('song');
+               
+                pressed = true;
                 music.play();
 
                 playButton.visible = false;
-                pressed = true
-
-                
-
                 
                 
             });
@@ -136,8 +135,8 @@ var titleScene = new Phaser.Scene('titleScene');
 
                 i += 1;
             } else if (pressed == true){
-                this.scene.pause(titleScene);
                 this.scene.launch(gameScene);
+                this.scene.pause(titleScene);
             }
         }
 
@@ -150,8 +149,6 @@ var titleScene = new Phaser.Scene('titleScene');
         gameScene.create = function()
         {
 
-            
-            
             
             player = this.physics.add.sprite((game.config.width / 2) - 80, 200, 'dude').setScale(1.5);
             player.setBounce(0.4);
