@@ -75,6 +75,7 @@ var titleScene = new Phaser.Scene('titleScene');
         var pressed = false;
         var i = 0;
         var d = 50;
+        var waited;
 
 
         game.scene.start(titleScene);
@@ -109,12 +110,19 @@ var titleScene = new Phaser.Scene('titleScene');
     
             playButton = this.add.text(game.config.width / 2, 200, 'PLAY', { fontFamily: "VCR", fontSize: '50pt'}).setOrigin(0.35, 0.5);
             playButton.setInteractive({ useHandCursor: true });
+
+            async function wait() {
+                waited = false;
+                await timer(2000);
+                waited = true;
+            }
+            wait();
+
             playButton.on('pointerdown', () => { 
                
-                if (document.readyState === "complete") {
+                if (document.readyState === "complete" && waited == true) {
                 pressed = true;
                 music.play();
-
                 playButton.visible = false;
                 }
             });
