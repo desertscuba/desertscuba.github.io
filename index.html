@@ -75,8 +75,8 @@ var titleScene = new Phaser.Scene('titleScene');
         var pressed = false;
         var i = 0;
         var d = 50;
-        var waited = false;
         var loaded = false;
+        var waited = false;
 
 
         game.scene.start(titleScene);
@@ -115,19 +115,20 @@ var titleScene = new Phaser.Scene('titleScene');
     
             playButton = this.add.text(game.config.width / 2, 200, 'PLAY', { fontFamily: "VCR", fontSize: '50pt'}).setOrigin(0.35, 0.5);
             playButton.setInteractive({ useHandCursor: true });
+            playButton.visible = false;
 
             async function wait() {
-                await timer(1000);
+                await timer(2000);
                 waited = true;
-            }
+                playButton.visible = true;
+                }
             wait();
 
             playButton.on('pointerdown', () => { 
-               
-                if (document.readyState === "complete" && waited === true && loaded === true) {
-                music.play();
-                pressed = true;
-                playButton.visible = false;
+                if (document.readyState === "complete" && loaded === true && waited === true) {
+                    music.play();
+                    playButton.visible = false;
+                    pressed = true;
                 }
             });
             
@@ -145,8 +146,8 @@ var titleScene = new Phaser.Scene('titleScene');
 
                 i += 1;
             } else if (pressed == true){
-                this.scene.launch(gameScene);
                 this.scene.pause(titleScene);
+                this.scene.launch(gameScene);
             }
         }
 
