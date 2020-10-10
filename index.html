@@ -75,7 +75,8 @@ var titleScene = new Phaser.Scene('titleScene');
         var pressed = false;
         var i = 0;
         var d = 50;
-        var waited;
+        var waited = false;
+        var loaded = false;
 
 
         game.scene.start(titleScene);
@@ -92,6 +93,10 @@ var titleScene = new Phaser.Scene('titleScene');
 		    this.load.image('skyline-front', 'assets/Front2.png'); 
             this.load.image('ground', 'assets/Ground2.png'); 
             this.load.spritesheet('dude', 'assets/spritesheet.png', { frameWidth: 34, frameHeight: 34 });
+
+            this.load.on('complete', function () {
+                loaded = true;
+            });
     
         }
 
@@ -112,17 +117,16 @@ var titleScene = new Phaser.Scene('titleScene');
             playButton.setInteractive({ useHandCursor: true });
 
             async function wait() {
-                waited = false;
-                await timer(2000);
+                await timer(1000);
                 waited = true;
             }
             wait();
 
             playButton.on('pointerdown', () => { 
                
-                if (document.readyState === "complete" && waited == true) {
-                pressed = true;
+                if (document.readyState === "complete" && waited === true && loaded === true) {
                 music.play();
+                pressed = true;
                 playButton.visible = false;
                 }
             });
