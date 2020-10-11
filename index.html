@@ -78,6 +78,7 @@ var animateScene = new Phaser.Scene('animateScene')
         var d = 25;
         var loaded = false;
         var waited = false;
+        var playButton;
 
 
         game.scene.start(titleScene);
@@ -113,7 +114,7 @@ var animateScene = new Phaser.Scene('animateScene')
             skylineFront = this.add.tileSprite(0, game.config.height, game.config.width, 232, 'skyline-front').setOrigin(0, 0);
             ground = this.add.tileSprite(0, game.config.height, game.config.width, 96, 'ground').setOrigin(0, 0);
 
-            var playButton = this.add.text(game.config.width / 2, 200, 'PLAY', { fontFamily: "VCR", fontSize: '50pt'}).setOrigin(0.35, 0.5);
+            playButton = this.add.text(game.config.width / 2, 200, 'PLAY', { fontFamily: "VCR", fontSize: '50pt'}).setOrigin(0.35, 0.5);
             playButton.setInteractive({ useHandCursor: true });
             playButton.visible = false;
 
@@ -127,8 +128,8 @@ var animateScene = new Phaser.Scene('animateScene')
             playButton.on('pointerdown', () => { 
                 if (document.readyState === "complete" && loaded === true && waited === true) {
                     music.play();
-                    playButton.visible = false;
-                    this.time.addEvent({ delay: (8000 + this.sound.audioPlayDelay), callback: showSky, callbackScope: this, loop: false });
+                    playButton.setText(this.sound.audioPlayDelay);
+                    this.time.addEvent({ delay: 7800 + (this.sound.audioPlayDelay * 1000), callback: showSky, callbackScope: this, loop: false });
                     this.scene.launch(animateScene);
                 }
             });
@@ -229,6 +230,7 @@ var animateScene = new Phaser.Scene('animateScene')
                 sky.alpha += 0.1;
                 await timer(30);
             };
+            playButton.setText(`new ${titleScene.sound.audioPlayDelay}`)
         }
         fade();
         }
