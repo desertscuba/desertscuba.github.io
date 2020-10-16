@@ -159,25 +159,6 @@ var animateScene = new Phaser.Scene('animateScene')
                 return new Promise(res => setTimeout(res, ms));
                 }
 
-        gameScene.create = function() {
-            async function  tsScroll() {
-                while (true === true)
-                mountainX += 0.2;
-                backX += 0.4;
-                midX += 0.5;
-                frontX += 0.7;
-                groundX += 1.4;
-
-                mountains.tilePositionX = mountainX;
-                skylineBack.tilePositionX = backX;
-                skylineMid.tilePositionX = midX;
-                skylineFront.tilePositionX = frontX;  
-                ground.tilePositionX = groundX;
-                await timer(17);
-                }
-            tsScroll();
-        }
-
         gameScene.update = function() {
 
                 
@@ -186,6 +167,25 @@ var animateScene = new Phaser.Scene('animateScene')
 
         gameScene.create = function()
         {
+            async function  tsScroll() {
+                while (true) {
+                    mountainX += 0.2;
+                    backX += 0.4;
+                    midX += 0.5;
+                    frontX += 0.7;
+                    groundX += 1.4;
+
+                    mountains.tilePositionX = mountainX;
+                    skylineBack.tilePositionX = backX;
+                    skylineMid.tilePositionX = midX;
+                    skylineFront.tilePositionX = frontX;  
+                    ground.tilePositionX = groundX;
+                    await timer(17);
+                    }
+                }
+            tsScroll();
+
+
             //this.physics.world.setFPS(30);
             player = this.physics.add.sprite((game.config.width / 2) - 80, 200, 'dude').setScale(1.5);
             player.setBounce(0.4);
