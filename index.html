@@ -124,8 +124,8 @@ var animateScene = new Phaser.Scene('animateScene')
 
             playButton.on('pointerdown', () => { 
                 if (document.readyState === "complete" && loaded === true && waited === true) {
-                    music.play();
                     playButton.visible = false;
+                    music.play();
 
                     while (playing === false) {
                         if (music.isPlaying === true) {
