@@ -75,7 +75,7 @@ var animateScene = new Phaser.Scene('animateScene')
         var loaded = false;
         var waited = false;
         var playButton;
-
+        var playing = false;
 
         game.scene.start(titleScene);
 
@@ -99,8 +99,7 @@ var animateScene = new Phaser.Scene('animateScene')
         }
 
         titleScene.create = function () {
-            var music = this.sound.add('song');
-            var playing = false;
+            this.music = this.sound.add('song');
 
             sky = this.add.image(0, 0, 'sky').setOrigin(0,0);
             sky.alpha = 0;
@@ -125,15 +124,10 @@ var animateScene = new Phaser.Scene('animateScene')
             playButton.on('pointerdown', () => { 
                 if (document.readyState === "complete" && loaded === true && waited === true) {
                     playButton.visible = false;
-                    music.play();
+                    this.music.play();
 
-                    while (playing === false) {
-                        if (music.isPlaying === true) {
-                            this.time.addEvent({ delay: 8000, callback: showSky, callbackScope: this, loop: false });
-                            this.scene.launch(animateScene); //Don't stop title scene, this will stop timers
-                            playing = true;
-                        }
-                    }
+                    this.time.addEvent({ delay: 32, callback: checkPlaying, callbackScope: this, loop: true });
+                         
                 }
             });
         }
@@ -209,7 +203,13 @@ var animateScene = new Phaser.Scene('animateScene')
             
         }   
     
-        
+        function checkPlaying() {
+            if (this.music.isPlaying === true) {
+                            this.time.removeAllEvents();
+                            this.time.addEvent({ delay: 8000, callback: showSky, callbackScope: this, loop: false });
+                            this.scene.launch(animateScene); //Don't stop title scene, this will stop timers
+                    }
+        }
     
         function formatTime(seconds)
         {
