@@ -116,16 +116,17 @@ var animateScene = new Phaser.Scene('animateScene')
 
             playButton = this.add.text(game.config.width / 2, 200, 'PLAY', { fontFamily: "VCR", fontSize: '50pt'}).setOrigin(0.35, 0.5);
             playButton.setInteractive({ useHandCursor: true });
+            playButton.visible = false;
 
-            // async function wait() {
-            //     await timer(2000);
-            //     waited = true;
-            //     playButton.visible = true;
-            //     }
-            // wait();
+            async function wait() {
+                await timer(2000);
+                waited = true;
+                playButton.visible = true;
+                }
+            wait();
 
             playButton.on('pointerdown', () => { 
-                if (document.readyState === "complete" && loaded === true) {
+                if (document.readyState === "complete" && loaded === true && waited === true) {
                     music.play();
                     playButton.visible = false;
                     this.time.addEvent({ delay: 8000, callback: showSky, callbackScope: this, loop: false });
@@ -171,7 +172,7 @@ var animateScene = new Phaser.Scene('animateScene')
         {
             
             this.startTime = new Date();
-            this.physics.world.setFPS(30);
+            //this.physics.world.setFPS(30);
             player = this.physics.add.sprite((game.config.width / 2) - 80, 200, 'dude').setScale(1.5);
             player.setBounce(0.4);
             player.setCollideWorldBounds(true);
