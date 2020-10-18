@@ -24,6 +24,7 @@
         margin: 0;
         padding: 0;
         height: 100%;
+        width: 100%;
         background-color:black;
     }
 </style>
@@ -52,7 +53,6 @@ var animateScene = new Phaser.Scene('animateScene');
             physics: {
                 default: 'arcade',
                 arcade: {
-                    gravity: { y: 800 },
                     debug: false
                 }
             },
@@ -66,9 +66,9 @@ var animateScene = new Phaser.Scene('animateScene');
             scene: [bootScene, titleScene, readyScene, animateScene, gameScene]
         };
     
+        window.focus();
+
         var game = new Phaser.Game(config);
-        var player;
-        var platforms;
         var cursors;
         var text;
         var sky;
@@ -100,7 +100,7 @@ var animateScene = new Phaser.Scene('animateScene');
 		    this.load.image('skyline-front', 'assets/Front2.png'); 
             this.load.image('ground', 'assets/Ground2.png'); 
             this.load.spritesheet('dude', 'assets/spritesheet.png', { frameWidth: 34, frameHeight: 34 });
-            this.load.image('platform', 'assets/game-platform.png');
+            this.load.image('platform', 'assets/game-platform2.png');
 
             this.load.on('complete', function () {
                 loaded = true;
@@ -129,7 +129,7 @@ var animateScene = new Phaser.Scene('animateScene');
 
 
             async function goList() {
-            await timer(1000);
+            await timer(500);
             for (x = 14; x < 29; x++) {
                 await timer(120);
                 titleScene.add.image(game.config.width / 2, x * 17, 'list');
@@ -152,7 +152,6 @@ var animateScene = new Phaser.Scene('animateScene');
             this.taptostart = this.add.image(game.config.width / 2, 540, 'taptostart');
             this.taptostart.alpha = 0;
             this.alphaIndex = 0.02;
-            this.time.addEvent({ delay: 30, callback: pulse, callbackScope: this, loop: true });
 
             function pulse() {
                 this.taptostart.alpha += this.alphaIndex;
@@ -165,11 +164,12 @@ var animateScene = new Phaser.Scene('animateScene');
             this.taptostart.setInteractive({ useHandCursor: true });
             // playButton.visible = false;
 
-            async function wait() {
+            readyScene.wait = async function () {
                 await timer(1000);
                 waited = true;
+                this.time.addEvent({ delay: 30, callback: pulse, callbackScope: this, loop: true });
                 }
-            wait();
+            readyScene.wait();
 
             this.input.on('pointerdown', () => { 
                 if (document.readyState === "complete" && loaded === true && waited === true) {
@@ -237,50 +237,52 @@ var animateScene = new Phaser.Scene('animateScene');
         
 
         gameScene.update = function() {
-            // var minDistance = game.config.width;
-            // this.platformGroup.getChildren().forEach(function(platform){
-            //     var platformDistance = game.config.width - platform.x - platform.displayWidth / 2;
-            //     minDistance = Math.min(minDistance, platformDistance);
-            //     if (platform.x < - platform.displayWidth / 2) {
-            //         this.platformGroup.killAndHide(platform);
-            //         this.platformGroup.remove(platform);
-            //     }
+            this.player.x = 405;
+            var minDistance = game.config.width;
+            this.platformGroup.getChildren().forEach(function(platform){
+                var platformDistance = game.config.width - platform.x - platform.displayWidth / 2;
+                minDistance = Math.min(minDistance, platformDistance);
+                if (platform.x < - platform.displayWidth / 2) {
+                    this.platformGroup.killAndHide(platform);
+                    this.platformGroup.remove(platform);
+                }
 
-            // }, this);
+            }, this);
 
-            // if (minDistance > this.nextPlatformDistance) {
-            //     var nextPlatformWidth = Phaser.Math.Between(options.platformSizeRange[0], options.platformSizeRange[1]);
-            //     this.addPlatform(nextPlatformWidth, game.config.width + nextPlatformWidth / 2);
-            // }
+            if (minDistance > this.nextPlatformDistance) {
+                var nextPlatformWidth = Phaser.Math.Between(options.platformSizeRange[0], options.platformSizeRange[1]);
+                this.addPlatform(nextPlatformWidth, game.config.width + nextPlatformWidth / 2);
+            }
         }
 
 
         gameScene.create = function()
         {
 
-            // this.platformGroup = this.add.group({
-            //     removeCallback: function(platform) {
-            //         platform.scene.platformPool.add(platform)
-            //     }
-            // });
+            this.platformGroup = this.add.group({
+                removeCallback: function(platform) {
+                    platform.scene.platformPool.add(platform)
+                }
+            });
 
-            // this.platformPool = this.add.group({
-            //     removeCallback: function(platform) {
-            //         platform.scene.platformGroup.add(platform)
-            //     } 
-            // });
+            this.platformPool = this.add.group({
+                removeCallback: function(platform) {
+                    platform.scene.platformGroup.add(platform)
+                } 
+            });
 
             
 
             //this.physics.world.setFPS(30);
-            player = this.physics.add.sprite((game.config.width / 2) - 80, 200, 'dude').setScale(1.5);
-            player.setBounce(0.4);
-            player.setCollideWorldBounds(true);
+            this.player = this.physics.add.sprite((game.config.width / 2) - 80, 200, 'dude').setScale(1.5);
+            this.player.setGravityY(800);
+            this.player.setBounce(0.4);
+            this.player.setCollideWorldBounds(true);
             this.physics.add.existing(ground, true);
-            this.physics.add.collider(player, ground);
+            this.physics.add.collider(this.player, ground);
 
-            // this.addPlatform(10, game.config.width / 2);
-            // this.physics.add.collider(player, this.platformGroup);
+            this.addPlatform(game.config.width / 4, 400);
+            this.physics.add.collider(this.player, this.platformGroup);
 
             
             this.anims.create({
@@ -291,7 +293,7 @@ var animateScene = new Phaser.Scene('animateScene');
             });
 
 
-            player.anims.play('right');
+            this.player.anims.play('right');
         
             this.initialTime = 180;
     
@@ -301,8 +303,16 @@ var animateScene = new Phaser.Scene('animateScene');
 
             this.time.addEvent({ delay: 1000, callback: timerEvent, callbackScope: this, loop: true });
 
-            this.input.on('pointerdown', function(){
-                player.setVelocityY(-300);
+
+            // this.platforms = this.physics.add.staticGroup();
+            // this.platforms.create(600, 600, 'platform');
+            // this.physics.add.collider(player, this.platforms);
+
+
+
+
+            this.input.on('pointerdown', () => {
+                this.player.setVelocityY(-300);
             });
         
             
@@ -310,19 +320,20 @@ var animateScene = new Phaser.Scene('animateScene');
         }   
 
         gameScene.addPlatform = function(platformWidth, posX) {
-                let platform;
-                if (this.platformPool.getLength()) {
+                 let platform;
+                 if (this.platformPool.getLength()) {
                     platform = this.platformPool.getFirst();
                     platform.x = posX;
                     platform.active = true;
                     platform.visible = true;
                     this.platformPool.remove(platform);
-                } else {
-                    platform = this.physics.add.sprite(posX, 600, 'platform');
-                    platform.setImmovable = true;
-                    platform.setVelocityX(options.platformStartSpeed * -1);
+                 } else {
+                    platform = this.physics.add.sprite(posX, 500, 'platform');
+                    platform.setImmovable(true);
+                    //platform.body.setCollision(false, false, true, true);
+                    platform.setVelocityX(-100);
                     this.platformGroup.add(platform);
-                }
+                 }
                 platform.displayWidth = platformWidth;
                 this.nextPlatformDistance = Phaser.Math.Between(options.spawnRange[0], options.spawnRange[1]);
             }
