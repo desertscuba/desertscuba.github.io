@@ -14,7 +14,7 @@
         }
     </style>
 
-    <div style="font-family: VCR;">.</div>
+    <!--<div style="font-family: VCR;">.</div> -->
 
 </head>
  
@@ -33,6 +33,7 @@
 
 <script type="text/javascript">
 
+var bootScene = new Phaser.Scene('bootScene');
 var gameScene = new Phaser.Scene('gameScene');
 var titleScene = new Phaser.Scene('titleScene');
 var readyScene = new Phaser.Scene('readyScene');
@@ -51,7 +52,7 @@ var animateScene = new Phaser.Scene('animateScene');
             physics: {
                 default: 'arcade',
                 arcade: {
-                    gravity: { y: 800},
+                    gravity: { y: 800 },
                     debug: false
                 }
             },
@@ -62,7 +63,7 @@ var animateScene = new Phaser.Scene('animateScene');
                 mode: Phaser.Scale.HEIGHT_CONTROLS_WIDTH, //Works in portrait and landscape
                 autoCenter: Phaser.Scale.CENTER_BOTH,
             },
-            scene: [titleScene, readyScene, animateScene, gameScene]
+            scene: [bootScene, titleScene, readyScene, animateScene, gameScene]
         };
     
         var game = new Phaser.Game(config);
@@ -84,13 +85,9 @@ var animateScene = new Phaser.Scene('animateScene');
         var tt;
         var instructions;
 
+        game.scene.start(bootScene);
 
-        game.scene.start(titleScene);
-
-
-        titleScene.preload = function()
-        {
-    
+        bootScene.preload = function() {
             this.load.audio('song', 'assets/game-over.mp3');
             this.load.image('instructions', 'assets/instructions.png');
             this.load.image('startscreen', 'assets/startscreen.png');
@@ -108,10 +105,25 @@ var animateScene = new Phaser.Scene('animateScene');
             this.load.on('complete', function () {
                 loaded = true;
             });
-    
         }
 
+        bootScene.create = function() {
+
+            sky = this.add.image(0, 0, 'sky').setOrigin(0,0);
+            sky.alpha = 0;
+
+            mountains = this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'mountains').setOrigin(0, 0);
+            skylineBack = this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'skyline-back').setOrigin(0, 0);
+            skylineMid= this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'skyline-mid').setOrigin(0, 0);
+            skylineFront = this.add.tileSprite(0, game.config.height, game.config.width, 232, 'skyline-front').setOrigin(0, 0);
+            ground = this.add.tileSprite(0, game.config.height, game.config.width, 96, 'ground').setOrigin(0, 0);
+
+            this.scene.launch(titleScene);
+        }
+        
+
         titleScene.create = function() {
+            this.add.text(0, 0, '', { fontFamily: "VCR"}); //get font working
 
             instructions = this.add.image(game.config.width / 2, game.config.height / 2, 'instructions');
 
@@ -178,26 +190,17 @@ var animateScene = new Phaser.Scene('animateScene');
             this.time.addEvent({ delay: 146000, callback: hideSky, callbackScope: this, loop: false });
             this.time.addEvent({ delay: 166000, callback: showSky, callbackScope: this, loop: false });
 
-            sky = this.add.image(0, 0, 'sky').setOrigin(0,0);
-            sky.alpha = 0;
-
-            mountains = this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'mountains').setOrigin(0, 0);
-            skylineBack = this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'skyline-back').setOrigin(0, 0);
-            skylineMid= this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'skyline-mid').setOrigin(0, 0);
-            skylineFront = this.add.tileSprite(0, game.config.height, game.config.width, 232, 'skyline-front').setOrigin(0, 0);
-            ground = this.add.tileSprite(0, game.config.height, game.config.width, 96, 'ground').setOrigin(0, 0);
-
             this.gameStartMs = Date.now();
 
             async function moveUp() {
-                tt = 25; // total time
+                tt = 35; // total time
                 for (t = 1; t <= tt; t ++) {
                     mountains.y = distanceAtTime(game.config.height, t);
                     skylineBack.y = distanceAtTime(game.config.height, t);
                     skylineMid.y = distanceAtTime(game.config.height, t);
                     skylineFront.y = distanceAtTime((232 + 96), t);
                     ground.y = distanceAtTime(96, t);  
-                    await timer(32);
+                    await timer(16);
                 }
                 //animateScene.scene.pause(animateScene);
                 animateScene.scene.launch(gameScene);
@@ -270,7 +273,7 @@ var animateScene = new Phaser.Scene('animateScene');
             
 
             //this.physics.world.setFPS(30);
-            player = this.physics.add.sprite((game.config.width / 2) - 80, 300, 'dude').setScale(1.5);
+            player = this.physics.add.sprite((game.config.width / 2) - 80, 200, 'dude').setScale(1.5);
             player.setBounce(0.4);
             player.setCollideWorldBounds(true);
             this.physics.add.existing(ground, true);
