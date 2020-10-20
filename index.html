@@ -27,6 +27,8 @@
 </style>
 
 <body>
+<meta name="viewport" content="width=[widest centered div];"/>
+
 
 
 <script type="text/javascript">
@@ -116,6 +118,7 @@
             this.load.image('ins3', 'assets/ins3.png');
             this.load.image('ins4', 'assets/ins4.png');
             this.load.image('sky', 'assets/Sky2.png');
+            this.load.image('nightsky', 'assets/night-sky.jpeg');
             this.load.image('star', 'assets/star.png');
             this.load.image('mountains', 'assets/Mountains2.png')
             this.load.image('skyline-back', 'assets/back.png');
@@ -132,7 +135,7 @@
 
         bootScene.create = function() {
 
-
+            this.add.image(0, 0, 'nightsky').setOrigin(0,0);
             sky = this.add.image(0, 0, 'sky').setOrigin(0,0);
             sky.alpha = 0;
 
@@ -157,7 +160,6 @@
 
         welcomeScene.create = function () {
 
-            this.music = this.sound.add('song');
 
             this.add.text(0, 0, '', { fontFamily: "VCR"}); //get font working
 
@@ -188,6 +190,7 @@
 
             
             goList();
+
             
 
             function pulse() {
@@ -212,15 +215,15 @@
             this.input.on('pointerdown', () => { 
                 if (document.readyState === "complete" && loaded === true && waited === true && notPressed === true) {
                     notPressed = false;
-                    //playButton.visible = false;
-                    this.music.play();
-                    this.time.addEvent({ delay: 16, callback: checkPlaying, callbackScope: this, loop: true });
+                    welcomeScene.scene.start(animateScene);                    
                 }
             });
         }
+         
 
         
          animateScene.create = function() {
+
             
 
             //Used to set tileSprite position
@@ -259,6 +262,9 @@
 
 
         instructionsScene.create = function() {
+
+            this.music = this.sound.add('song');
+
             this.arrow = this.add.text(game.config.width / 2, 150, '→', { fontFamily: "VCR", fontSize: '32pt' }).setOrigin(0.5);            var ins1 = this.add.image(game.config.width / 2, 100, 'ins1');
             this.alphaIndexArrow = 0.04;
 
@@ -270,7 +276,9 @@
                     this.alphaIndexArrow = this.alphaIndexArrow * -1;
                 } 
             }
-            
+
+
+
             var ins2 = this.add.image(game.config.width / 2, 100, 'ins2');
             var ins3 = this.add.image(game.config.width / 2, 100, 'ins3').setScale(0.25);
             var ins4 = this.add.image(game.config.width / 2, 100, 'ins4');
@@ -290,7 +298,8 @@
                         instructionsScene.arrow.setScale(0.75);
                         instructionsScene.arrow.y = 170;
                         this.input.on('pointerdown', () => {
-                            this.scene.start(gameScene);
+                            instructionsScene.music.play();
+                            this.time.addEvent({ delay: 16, callback: checkPlaying, callbackScope: this, loop: true });
             });
             });
             });
@@ -342,15 +351,15 @@
         gameScene.create = function()
         {
 
-            this.time.addEvent({ delay: 7000, callback: showSky, callbackScope: this, loop: false });
-            this.time.addEvent({ delay: 6500, callback: showStars, callbackScope: this, loop: false });
-            this.time.addEvent({ delay: 7300, callback: starsMove, callbackScope: this, loop: false });
-            this.time.addEvent({ delay: 41000, callback: hideSky, callbackScope: this, loop: false });
-            this.time.addEvent({ delay: 61000, callback: showSky, callbackScope: this, loop: false });
-            this.time.addEvent({ delay: 88000, callback: hideSky, callbackScope: this, loop: false });
-            this.time.addEvent({ delay: 108000, callback: showSky, callbackScope: this, loop: false });
-            this.time.addEvent({ delay: 145000, callback: hideSky, callbackScope: this, loop: false });
-            this.time.addEvent({ delay: 165000, callback: showSky, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 8000, callback: showSky, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 500, callback: showStars, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 1500, callback: starsMove, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 42000, callback: hideSky, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 62000, callback: showSky, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 89000, callback: hideSky, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 109000, callback: showSky, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 146000, callback: hideSky, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 166000, callback: showSky, callbackScope: this, loop: false });
 
             var camera = this.cameras.main;
 
@@ -452,9 +461,9 @@
             }
     
         function checkPlaying() {
-            if (this.music.seek > 0) {
+            if (instructionsScene.music.seek > 0) {
                             this.time.removeAllEvents();
-                            this.scene.start(animateScene); 
+                            instructionsScene.scene.start(gameScene);
                     }
         }
     
