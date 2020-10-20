@@ -1,0 +1,489 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <title>Game Over</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.24.1/dist/phaser.min.js"></script>    
+    
+
+
+    <style type="text/css" media="screen, print">
+        @font-face {
+          font-family: "VCR";
+          src: url("assets/VCR_OSD_MONO.ttf") format("truetype");
+        }
+    </style>
+
+    <!--<div style="font-family: VCR;">.</div> -->
+
+</head>
+ 
+<style>
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        background-color:black;
+        text-align: center;
+    }
+</style>
+
+    
+
+
+<script type="text/javascript">
+
+        ///////////////////////////////////////////////////////////////////////////////////
+
+        var options = {
+            gravity: 800,
+            speed: 85,
+            spawnRange: [20, 200],
+            platformSizeRange: [100, 300],
+        }
+
+        var backgroundSpeedRatios = { 
+            mountains: 0.2,
+            skylineBack: 0.3,
+            skylineMid: 0.4,
+            skylineFront: 0.5,
+        }
+
+        //////////////////////////////////////////////////////////////////////////////////
+
+    var bootScene = new Phaser.Scene('bootScene');
+    var gameScene = new Phaser.Scene('gameScene');
+    var welcomeScene = new Phaser.Scene('welcomeScene');
+    var animateScene = new Phaser.Scene('animateScene');
+
+        var config = {
+            type: Phaser.AUTO,
+            width: 970,
+            height: 686,
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    debug: false
+                }
+            },
+            audio: {
+            disableWebAudio: true //web audio doesn't play with silent mode on
+            },
+            scale: {
+                mode: Phaser.Scale.HEIGHT_CONTROLS_WIDTH, //Works in portrait and landscape
+                autoCenter: Phaser.Scale.CENTER_BOTH,
+            },
+            scene: [bootScene, welcomeScene, animateScene, gameScene]
+        };
+    
+        window.focus();
+
+        var game = new Phaser.Game(config);
+        var dropHeight = 200;
+        var cursors;
+        var text;
+        var sky;
+        var mountains;
+        var skylineBack;
+        var skylineMid;
+        var skylineFront;
+        var ground;
+        var pressed = false;
+        var loaded = false;
+        var waited = false;
+        var playButton;
+        var playing = false;
+        var tt;
+        var instructions;
+        var tsCamera;
+        var scoreText;
+        var score = 0;
+        var stars;
+
+
+        //starting scene removes just scene before. launching doesn't remove any.
+
+        game.scene.start(bootScene);
+
+        bootScene.preload = function() {
+            this.load.audio('song', 'assets/game-over.mp3');
+            this.load.image('instructions', 'assets/instructions.png');
+            this.load.image('startscreen', 'assets/startscreen.png');
+            this.load.image('taptostart', 'assets/taptostart.jpg');
+            this.load.image('list', 'assets/list.png')
+            this.load.image('sky', 'assets/Sky2.png');
+            this.load.image('star', 'assets/star.png');
+            this.load.image('mountains', 'assets/Mountains2.png')
+            this.load.image('skyline-back', 'assets/back.png');
+		    this.load.image('skyline-mid', 'assets/mid-new.png');
+		    this.load.image('skyline-front', 'assets/Front2.png'); 
+            this.load.image('ground', 'assets/Ground2.png'); 
+            this.load.spritesheet('dude', 'assets/spritesheet.png', { frameWidth: 34, frameHeight: 34 });
+            this.load.image('platform', 'assets/platform-3.png');
+
+            this.load.on('complete', function () {
+                loaded = true;
+            });
+        }
+
+        bootScene.create = function() {
+
+
+            sky = this.add.image(0, 0, 'sky').setOrigin(0,0);
+            sky.alpha = 0;
+
+            tsCamera = this.cameras.main;
+
+            mountains = this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'mountains').setOrigin(0, 0);
+            skylineBack = this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'skyline-back').setOrigin(0, 0);
+            skylineMid = this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'skyline-mid').setOrigin(0, 0);
+            skylineFront = this.add.tileSprite(0, game.config.height, game.config.width, 232, 'skyline-front').setOrigin(0, 0);
+            ground = this.add.tileSprite(0, game.config.height, game.config.width, 96, 'ground').setOrigin(0, 0);
+
+            mountains.alpha = 0.9;
+            skylineBack.alpha = 0.85;
+            skylineMid.alpha = 0.6;
+            skylineFront.alpha = 0.95;
+
+            this.scene.launch(welcomeScene);
+        }
+        
+
+        
+
+        welcomeScene.create = function () {
+
+            this.music = this.sound.add('song');
+
+            this.add.text(0, 0, '', { fontFamily: "VCR"}); //get font working
+
+            this.startscreen = this.add.image(game.config.width / 2, game.config.height / 2, 'startscreen');
+            this.taptostart = this.add.image(game.config.width / 2, 540, 'taptostart');
+            this.taptostart.alpha = 0;
+            this.alphaIndex = 0.02;
+
+            async function goList() {
+            var list = [15];
+            var keepGoing = true;
+            for (x = 14; x < 29; x++) {
+                list[x] = welcomeScene.add.image(game.config.width / 2, x * 17, 'list');
+                list[x].visible = false;
+            }
+            await timer(500);
+            while (keepGoing) {
+            for (x = 14; x < 29; x++) {
+                list[x].visible = true;
+                await timer(100);
+            }
+            for (x = 14; x < 29; x++) {
+                list[x].visible = false;
+                await timer(100);
+            }
+            }
+            }
+
+            
+            goList();
+            
+
+            function pulse() {
+                this.taptostart.alpha += this.alphaIndex;
+                if (this.taptostart.alpha === 1 || this.taptostart.alpha === 0) {
+                    this.alphaIndex = this.alphaIndex * -1;
+                } 
+            }
+            
+            // playButton = this.add.text(game.config.width / 2, 200, 'TAP TO START', { fontFamily: "VCR", fontSize: '32pt'}).setOrigin(0.5);
+            this.taptostart.setInteractive({ useHandCursor: true });
+            // playButton.visible = false;
+
+            welcomeScene.wait = async function () {
+                await timer(2000);
+                waited = true;
+                this.time.addEvent({ delay: 30, callback: pulse, callbackScope: this, loop: true });
+                }
+            welcomeScene.wait();
+
+            this.input.on('pointerdown', () => { 
+                if (document.readyState === "complete" && loaded === true && waited === true) {
+                    //playButton.visible = false;
+                    this.music.play();
+                    this.time.addEvent({ delay: 16, callback: checkPlaying, callbackScope: this, loop: true });
+                }
+            });
+        }
+
+        
+         animateScene.create = function() {
+            this.time.addEvent({ delay: 8000, callback: showSky, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 7500, callback: showStars, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 8300, callback: starsMove, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 42000, callback: hideSky, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 62000, callback: showSky, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 89000, callback: hideSky, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 109000, callback: showSky, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 146000, callback: hideSky, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 166000, callback: showSky, callbackScope: this, loop: false });
+
+            //Used to set tileSprite position
+            this.velocity = this.physics.add.sprite(0, 0, '');
+            this.velocity.visible = false;
+            this.velocity.setVelocityX(options.speed);
+
+            this.gameStartMs = Date.now();
+
+            async function moveUp() {
+                tt = 35; // total time
+                for (t = 1; t <= tt; t ++) {
+                    mountains.y = distanceAtTime(game.config.height, t);
+                    skylineBack.y = distanceAtTime(game.config.height, t);
+                    skylineMid.y = distanceAtTime(game.config.height, t);
+                    skylineFront.y = distanceAtTime((232 + 96), t);
+                    ground.y = distanceAtTime(96, t);  
+                    await timer(16);
+                }
+                //animateScene.scene.pause(animateScene);
+                animateScene.scene.launch(gameScene);
+            }
+            moveUp();
+        }  
+
+        animateScene.update = function() { //60 normal (roughly every 16ms), will only run 30 times per second in low power mode - can't do incrementing
+
+            var tsPosition = this.velocity.x;
+
+            mountains.tilePositionX = tsPosition * backgroundSpeedRatios.mountains;
+            skylineBack.tilePositionX = tsPosition * backgroundSpeedRatios.skylineBack;
+            skylineMid.tilePositionX = tsPosition * backgroundSpeedRatios.skylineMid;
+            skylineFront.tilePositionX = tsPosition * backgroundSpeedRatios.skylineFront; 
+            ground.tilePositionX = tsPosition;
+        } 
+
+            
+        function distanceAtTime(ts, t){ // total distance, time for distance to be found at
+            var v = 0;
+            var u = ts / (0.5 * tt);
+            var a = (v - u) / tt;
+
+            var s = (u * t) + (0.5 * a * t ** 2);
+            return (game.config.height - s);
+        }   
+         
+
+        function timer(ms) {
+                return new Promise(res => setTimeout(res, ms));
+                }
+
+        
+
+        gameScene.update = function() {
+            this.player.x = 405;
+
+            var minDistance = game.config.width;
+            this.platformGroup.getChildren().forEach(function(platform){
+                var platformDistance = game.config.width - platform.x - platform.displayWidth / 2;
+                minDistance = Math.min(minDistance, platformDistance);
+                if (platform.x < - platform.displayWidth / 2) {
+                    this.platformGroup.killAndHide(platform);
+                    this.platformGroup.remove(platform);
+                }
+
+            }, this);
+
+            if (minDistance > this.nextPlatformDistance) {
+                var nextPlatformWidth = Phaser.Math.Between(options.platformSizeRange[0], options.platformSizeRange[1]);
+                this.addPlatform(nextPlatformWidth, game.config.width + nextPlatformWidth / 2);
+
+            }
+        }
+
+
+        gameScene.create = function()
+        {
+
+            var camera = this.cameras.main;
+
+            this.platformGroup = this.add.group({
+                removeCallback: function(platform) {
+                    platform.scene.platformPool.add(platform)
+                }
+            });
+
+            this.platformPool = this.add.group({
+                removeCallback: function(platform) {
+                    platform.scene.platformGroup.add(platform)
+                } 
+            });
+
+            
+
+            //this.physics.world.setFPS(30);
+            this.player = this.physics.add.sprite(game.config.width / 2 - 80, dropHeight, 'dude').setScale(1.5);
+            this.player.setGravityY(options.gravity);
+
+            
+
+            this.player.setBounce(0.4);
+            this.player.setCollideWorldBounds(true);
+            this.physics.add.existing(ground, true);
+            this.physics.add.collider(this.player, ground);
+
+            this.addPlatform(0, 400, 500);
+
+            this.physics.add.collider(this.player, this.platformGroup);
+
+            
+            this.anims.create({
+                key: 'right',
+                frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 2 }),
+                frameRate: 7.5,
+                repeat: -1
+            });
+
+
+            this.player.anims.play('right');
+        
+            this.initialTime = 180;
+    
+            scoreText = this.add.text(game.config.width / 2, 60, 'Score: 0', { fontFamily: "VCR", fontSize: '16pt' }).setOrigin(0.5);
+            text = this.add.text(game.config.width / 2, 32, formatTime(this.initialTime), { fontFamily: "VCR", fontSize: '16pt' }).setOrigin(0.5);
+
+            this.time.addEvent({ delay: 1000, callback: timerEvent, callbackScope: this, loop: true });
+
+
+
+            // camera.shake(2000, 0.005);
+            // tsCamera.shake(2000, 0.005);
+
+
+            
+
+
+
+            this.input.on('pointerdown', () => {
+                this.player.setVelocityY(-300);
+            });
+        
+            
+            
+        }   
+
+        gameScene.addPlatform = function(platformWidth, posX) {
+                 let platform;
+                 if (this.platformPool.getLength()) {
+                    platform = this.platformPool.getFirst();
+                    platform.x = posX;
+                    platform.active = true;
+                    platform.visible = true;
+                    this.platformPool.remove(platform);
+                 } else {
+                    platform = this.physics.add.sprite(posX, 500, 'platform');
+                    platform.setImmovable(true);
+                    platform.setFrictionX(0);
+                    platform.setVelocityX(-options.speed);
+                    this.platformGroup.add(platform);
+                 }
+                platform.displayWidth = platformWidth;
+                this.nextPlatformDistance = Phaser.Math.Between(options.spawnRange[0], options.spawnRange[1]);
+            }
+    
+        function checkPlaying() {
+            if (this.music.seek > 0) {
+                            this.time.removeAllEvents();
+                            this.scene.start(animateScene); 
+                    }
+        }
+    
+        function formatTime(seconds)
+        {
+            var minutes = Math.floor(seconds/60);
+            var partInSeconds = seconds%60;
+            partInSeconds = partInSeconds.toString().padStart(2,'0');
+            return `${minutes}:${partInSeconds}`;
+        }
+    
+    
+        function timerEvent ()
+        {
+            if (this.initialTime == 0)
+            {
+                this.time.removeAllEvents();
+            } else {
+        
+            this.initialTime -= 1; // One second
+            text.setText(formatTime(this.initialTime));
+            }
+        }
+
+        function showStars() {
+
+            stars = this.physics.add.group({
+                key: 'star',
+                repeat: 11,
+                setXY: { x: 12, y: 0, stepX: 70 }
+            });
+
+            stars.children.iterate(function (child) {
+
+                //  Give each star a slightly different bounce
+                child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+                child.setGravityY(1000);
+                //child.setVelocityX(-84);
+            });
+
+            this.physics.add.overlap(gameScene.player, stars, collectStar, null, this);
+            this.physics.add.collider(stars, gameScene.platformGroup);
+            this.physics.add.collider(stars, ground);
+
+
+        }
+
+        function starsMove() {
+            stars.children.iterate(function (child) {
+
+            //  Give each star a slightly different bounce
+
+                child.setVelocityX(-84);
+                });
+        }
+
+        function collectStar (player, star)
+        {
+            star.disableBody(true, true);
+
+            //  Add and update the score
+            score += 10;
+            scoreText.setText('Score: ' + score);
+
+        }
+        
+
+        function showSky () {
+            async function show() {
+            while (sky.alpha < 1) {
+                sky.alpha += 0.1;
+                await timer(30);
+            };
+        }
+        show();
+        }
+
+        function hideSky () {
+            async function hide() {
+            while (sky.alpha > 0) {
+                sky.alpha -= 0.1;
+                await timer(30);
+            };
+        }
+        hide();
+        }
+
+
+    
+    
+    </script>
+    
+    </body>
+    </html>
