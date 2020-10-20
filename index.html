@@ -21,12 +21,12 @@
 <style>
     html,
     body {
-        margin: 0;
+        margin: auto;
         padding: 0;
         height: 100%;
         width: 100%;
-        position: relative;
         background-color:black;
+        justify-content: center;
     }
 </style>
 
@@ -57,6 +57,7 @@
     var gameScene = new Phaser.Scene('gameScene');
     var welcomeScene = new Phaser.Scene('welcomeScene');
     var animateScene = new Phaser.Scene('animateScene');
+    var leaderboardScene = new Phaser.Scene('leaderboardScene');
 
         var config = {
             type: Phaser.AUTO,
@@ -100,7 +101,7 @@
         var tsCamera;
         var scoreText;
         var score = 0;
-        var stars;
+        var fallingStars;
 
 
         //starting scene removes just scene before. launching doesn't remove any.
@@ -118,7 +119,7 @@
             this.load.image('mountains', 'assets/Mountains2.png')
             this.load.image('skyline-back', 'assets/back.png');
 		    this.load.image('skyline-mid', 'assets/mid-new.png');
-		    this.load.image('skyline-front', 'assets/Front2.png'); 
+		    this.load.image('skyline-front', 'assets/Front2.png' ); 
             this.load.image('ground', 'assets/Ground2.png'); 
             this.load.spritesheet('dude', 'assets/spritesheet.png', { frameWidth: 34, frameHeight: 34 });
             this.load.image('platform', 'assets/platform-3.png');
@@ -206,8 +207,10 @@
                 }
             welcomeScene.wait();
 
+            var notPressed = true;
             this.input.on('pointerdown', () => { 
-                if (document.readyState === "complete" && loaded === true && waited === true) {
+                if (document.readyState === "complete" && loaded === true && waited === true && notPressed === true) {
+                    notPressed = false;
                     //playButton.visible = false;
                     this.music.play();
                     this.time.addEvent({ delay: 16, callback: checkPlaying, callbackScope: this, loop: true });
@@ -317,6 +320,18 @@
                 } 
             });
 
+            this.starGroup = this.add.group({
+                removeCallback: function(star) {
+                    star.scene.starPool.add(star)
+                }
+            });
+
+            this.starPool = this.add.group({
+                removeCallback: function(star) {
+                    star.scene.starGroup.add(star)
+                } 
+            });
+
             
 
             //this.physics.world.setFPS(30);
@@ -419,13 +434,13 @@
 
         function showStars() {
 
-            stars = this.physics.add.group({
+            fallingStars = this.physics.add.group({
                 key: 'star',
                 repeat: 11,
                 setXY: { x: 12, y: 0, stepX: 70 }
             });
 
-            stars.children.iterate(function (child) {
+            fallingStars.children.iterate(function (child) {
 
                 //  Give each star a slightly different bounce
                 child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
@@ -433,15 +448,15 @@
                 //child.setVelocityX(-84);
             });
 
-            this.physics.add.overlap(gameScene.player, stars, collectStar, null, this);
-            this.physics.add.collider(stars, gameScene.platformGroup);
-            this.physics.add.collider(stars, ground);
+            this.physics.add.overlap(gameScene.player, fallingStars, collectStar, null, this);
+            this.physics.add.collider(fallingStars, gameScene.platformGroup);
+            this.physics.add.collider(fallingStars, ground);
 
 
         }
 
         function starsMove() {
-            stars.children.iterate(function (child) {
+            fallingStars.children.iterate(function (child) {
 
             //  Give each star a slightly different bounce
 
