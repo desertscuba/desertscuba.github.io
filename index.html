@@ -21,7 +21,7 @@
 <style>
     html,
     body {
-        background-color:orange;
+        background-color:black;
         margin: 0;
         }
 </style>
@@ -57,6 +57,8 @@
 
         var config = {
             type: Phaser.AUTO,
+            width: 970,
+            height: 686,
             physics: {
                 default: 'arcade',
                 arcade: {
@@ -67,8 +69,7 @@
             disableWebAudio: true //web audio doesn't play with silent mode on
             },
             scale: {
-                width: 970,
-                height: 686,
+                parent: document.body,
                 mode: Phaser.Scale.HEIGHT_CONTROLS_WIDTH, //Works in portrait and landscape
                 autoCenter: Phaser.Scale.CENTER_BOTH,
             },
