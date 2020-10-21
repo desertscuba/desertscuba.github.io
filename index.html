@@ -23,9 +23,7 @@
     body {
         background-color:black;
         position: relative;
-        text-align:center;
-        margin: auto;
-    }
+        }
 </style>
 
 <body>
@@ -72,7 +70,7 @@
             },
             scale: {
                 mode: Phaser.Scale.HEIGHT_CONTROLS_WIDTH, //Works in portrait and landscape
-                //autoCenter: Phaser.Scale.CENTER_BOTH,
+                autoCenter: Phaser.Scale.CENTER_BOTH,
             },
             scene: [bootScene, welcomeScene, instructionsScene, animateScene, gameScene]
         };
