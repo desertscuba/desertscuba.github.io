@@ -27,10 +27,13 @@
         }
 </style>
 
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-firestore.js"></script>
+
 <body>
 
-<div id="phaser" style="height:100%;">
-</div>
+<div id="phaser" style="height:100%;"></div>
 
 <script type="text/javascript">
 
@@ -77,8 +80,21 @@
                 mode: Phaser.Scale.HEIGHT_CONTROLS_WIDTH, //Works in portrait and landscape
                 autoCenter: Phaser.Scale.CENTER_BOTH,
             },
-            scene: [bootScene, welcomeScene, instructionsScene, animateScene, gameScene]
+            scene: [bootScene, welcomeScene, instructionsScene, animateScene, gameScene, leaderboardScene]
         };
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBkgjnXTIy4uFe76fOdMKXdcsFYrwJGEbo",
+            authDomain: "game-over-7a4bb.firebaseapp.com",
+            databaseURL: "https://game-over-7a4bb.firebaseio.com",
+            projectId: "game-over-7a4bb",
+            storageBucket: "game-over-7a4bb.appspot.com",
+            messagingSenderId: "415474068057",
+            appId: "1:415474068057:web:37f17b6ead89963d38df48"
+};
+
+        firebase.initializeApp(firebaseConfig);
+
     
         window.focus();
 
@@ -103,6 +119,7 @@
         var scoreText;
         var score = 0;
         var fallingStars;
+        var leaderBoard;
 
 
         //starting scene removes just scene before. launching doesn't remove any.
@@ -129,6 +146,8 @@
             this.load.image('ground', 'assets/Ground2.png'); 
             this.load.spritesheet('dude', 'assets/spritesheet.png', { frameWidth: 34, frameHeight: 34 });
             this.load.image('platform', 'assets/platform-3.png');
+            this.load.plugin('rexfirebaseplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexfirebaseplugin.min.js', true);
+
 
             this.load.on('complete', function () {
                 loaded = true;
@@ -137,30 +156,24 @@
 
         bootScene.create = function() {
 
+            
+
             this.add.image(0, 0, 'nightsky').setOrigin(0,0);
             sky = this.add.image(0, 0, 'sky').setOrigin(0,0);
             sky.alpha = 0;
+            
 
-            tsCamera = this.cameras.main;
-
-            mountains = this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'mountains').setOrigin(0, 0);
-            skylineBack = this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'skyline-back').setOrigin(0, 0);
-            skylineMid = this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'skyline-mid').setOrigin(0, 0);
-            skylineFront = this.add.tileSprite(0, game.config.height, game.config.width, 232, 'skyline-front').setOrigin(0, 0);
-            ground = this.add.tileSprite(0, game.config.height, game.config.width, 96, 'ground').setOrigin(0, 0);
-
-            mountains.alpha = 0.9;
-            skylineBack.alpha = 0.85;
-            skylineMid.alpha = 0.6;
-            skylineFront.alpha = 0.95;
-
+            this.skyCamera = this.cameras.main;
+            
+            
             this.scene.launch(welcomeScene);
         }
         
-
         
 
         welcomeScene.create = function () {
+
+            
 
 
             this.add.text(0, 0, '', { fontFamily: "VCR"}); //get font working
@@ -217,7 +230,8 @@
             this.input.on('pointerdown', () => { 
                 if (document.readyState === "complete" && loaded === true && waited === true && notPressed === true) {
                     notPressed = false;
-                    welcomeScene.scene.start(animateScene);                    
+                    //welcomeScene.scene.start(animateScene);
+                    welcomeScene.scene.launch(leaderboardScene);
                 }
             });
         }
@@ -226,7 +240,18 @@
         
          animateScene.create = function() {
 
-            
+            tsCamera = this.cameras.main;
+
+            mountains = this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'mountains').setOrigin(0, 0);
+            skylineBack = this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'skyline-back').setOrigin(0, 0);
+            skylineMid = this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'skyline-mid').setOrigin(0, 0);
+            skylineFront = this.add.tileSprite(0, game.config.height, game.config.width, 232, 'skyline-front').setOrigin(0, 0);
+            ground = this.add.tileSprite(0, game.config.height, game.config.width, 96, 'ground').setOrigin(0, 0);
+
+            mountains.alpha = 0.9;
+            skylineBack.alpha = 0.85;
+            skylineMid.alpha = 0.6;
+            skylineFront.alpha = 0.95;
 
             //Used to set tileSprite position
             this.velocity = this.physics.add.sprite(0, 0, '');
@@ -551,6 +576,48 @@
             };
         }
         hide();
+        }
+
+
+        leaderboardScene.create = async function() {
+
+            leaderBoard = this.plugins.get('rexfirebaseplugin').add.leaderBoard({
+            root: 'scores',
+            // timeFilters: false,
+            // timeFilterType: 'year',
+            // pageItemCount: 100,
+            // boardID: undefined,
+            // tag: undefined
+            });
+
+
+            // leaderBoard.setUser('testuid2', "help");
+            // await leaderBoard.post(900);
+
+            var scoresRetrieved = await leaderBoard.loadFirstPage();
+
+
+            this.add.graphics({ fillStyle: { color: 0x000000} }).fillRoundedRect(290, 38, 395, 610, 15);
+            this.add.text(game.config.width / 2, 80, 'LEADERBOARD', { fontFamily: "VCR", fontSize: '32pt'}).setOrigin(0.5);
+
+
+            var displayNumber = 10;
+	        var spacing = 128;
+
+	        for (let i = 0; i < 10; i++)
+	        {
+                if (i < scoresRetrieved.length) {
+		        var num = this.add.text(300, spacing, `${i + 1}.`, {fontFamily: 'VCR', fontSize: '20px'}).setOrigin(0, 0.5)
+
+			    var scoreItem = scoresRetrieved[i]
+
+			    var name = this.add.text(num.x + 30, spacing, scoreItem.userName, {fontFamily: 'VCR', fontSize: '20px'}).setOrigin(0, 0.5)
+	
+			    this.add.text(name.x + 300, spacing, scoreItem.score.toString(), {fontFamily: 'VCR', fontSize: '20px'}).setOrigin(0, 0.5)	
+		        spacing += 20
+                }
+	            }
+
         }
 
 
