@@ -3,7 +3,7 @@
 <head> 
     <meta charset="UTF-8" />
     <title>Game Over</title>
-    <script src="//cdn.jsdelivr.net/npm/phaser@3.24.1/dist/phaser.min.js"></script>    
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.24.1/dist/phaser.min.js"></script>  
     
 
 
@@ -23,13 +23,16 @@
     body {
         margin: 0;
         height: 100%;
-        background-color:orange;
+        background: black;
         }
 </style>
 
 <!-- The core Firebase JS SDK is always required and must be listed first -->
 <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-firestore.js"></script>
+
+
+
 
 <body>
 
@@ -41,9 +44,9 @@
 
         var options = {
             gravity: 800,
-            speed: 100,
-            spawnRange: [65, 200],
-            platformSizeRange: [100, 300],
+            speed: 120,
+            spawnRange: [40, 120],
+            platformSizeRange: [120, 240],
         }
 
         var backgroundSpeedRatios = { 
@@ -71,6 +74,9 @@
                 arcade: {
                     debug: false
                 }
+            },
+            dom: {
+            createContainer: true
             },
             audio: {
             disableWebAudio: true //web audio doesn't play with silent mode on
@@ -120,6 +126,10 @@
         var score = 0;
         var fallingStars;
         var leaderBoard;
+        var backButton;
+        var nextPlatformDistance = new Array(3);
+        var add = true;
+        
 
 
         //starting scene removes just scene before. launching doesn't remove any.
@@ -138,15 +148,19 @@
             this.load.image('ins4', 'assets/ins4.png');
             this.load.image('sky', 'assets/Sky2.png');
             this.load.image('nightsky', 'assets/night-sky.jpeg');
-            this.load.image('star', 'assets/star.png');
+            this.load.image('star', 'assets/star.png'); 
+            this.load.image('bomb', 'assets/bomb.png');
             this.load.image('mountains', 'assets/Mountains2.png')
             this.load.image('skyline-back', 'assets/back.png');
 		    this.load.image('skyline-mid', 'assets/mid-new.png');
 		    this.load.image('skyline-front', 'assets/Front2.png' ); 
             this.load.image('ground', 'assets/Ground2.png'); 
             this.load.spritesheet('dude', 'assets/spritesheet.png', { frameWidth: 34, frameHeight: 34 });
+            this.load.spritesheet('dude-bombed', 'assets/spritesheet-bombed.png', { frameWidth: 32, frameHeight: 32 });
             this.load.image('platform', 'assets/platform-3.png');
             this.load.plugin('rexfirebaseplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexfirebaseplugin.min.js', true);
+            this.load.plugin('rexinputtextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js', true);
+
 
 
             this.load.on('complete', function () {
@@ -184,7 +198,7 @@
             this.alphaIndex = 0.04;
 
             async function goList() {
-            var list = [15];
+            var list = new Array(15);
             var keepGoing = true;
             for (x = 14; x < 29; x++) {
                 list[x] = welcomeScene.add.image(game.config.width / 2, x * 17, 'list');
@@ -212,7 +226,7 @@
                 this.taptostart.alpha += this.alphaIndex;
                 if (this.taptostart.alpha === 1 || this.taptostart.alpha === 0) {
                     this.alphaIndex = this.alphaIndex * -1;
-                } 
+                }
             }
             
             // playButton = this.add.text(game.config.width / 2, 200, 'TAP TO START', { fontFamily: "VCR", fontSize: '32pt'}).setOrigin(0.5);
@@ -230,8 +244,8 @@
             this.input.on('pointerdown', () => { 
                 if (document.readyState === "complete" && loaded === true && waited === true && notPressed === true) {
                     notPressed = false;
-                    //welcomeScene.scene.start(animateScene);
-                    welcomeScene.scene.launch(leaderboardScene);
+                    welcomeScene.scene.start(animateScene);
+                    //welcomeScene.scene.launch(leaderboardScene);
                 }
             });
         }
@@ -354,24 +368,45 @@
         gameScene.update = function() {
             this.player.x = 405;
 
+            // this.starGroup.getChildren().forEach(function(star){
+            //     if (star.x < - star.displayWidth / 2) {
+            //         this.starGroup.killAndHide(star);
+            //         this.starGroup.remove(platform);
+            //     }
+
+            // }, this);
+
+
+            for (z = 0; z < 3; z++) {
             var minDistance = game.config.width;
-            this.platformGroup.getChildren().forEach(function(platform){
+            this.platformGroup[z].getChildren().forEach(function(platform){
                 var platformDistance = game.config.width - platform.x - platform.displayWidth / 2;
                 minDistance = Math.min(minDistance, platformDistance);
                 if (platform.x < - platform.displayWidth / 2) {
-                    this.platformGroup.killAndHide(platform);
-                    this.platformGroup.remove(platform);
+                    this.platformGroup[z].killAndHide(platform);
+                    this.platformGroup[z].remove(platform);
                 }
 
             }, this);
 
-            if (minDistance > this.nextPlatformDistance) {
-                var nextPlatformWidth = Phaser.Math.Between(options.platformSizeRange[0], options.platformSizeRange[1]);
-                this.addPlatform(nextPlatformWidth, game.config.width + nextPlatformWidth / 2, 500);
-                nextPlatformWidth = Phaser.Math.Between(options.platformSizeRange[0], options.platformSizeRange[1]);
-                this.addPlatform(nextPlatformWidth, game.config.width + nextPlatformWidth / 2, 300);
-
+            
+            var platformY;
+            if (z == 0) {
+                platformY = 500;
+            } else if (z == 1) {
+                platformY = 350;
+            } else if (z == 2) {
+                platformY = 200;
             }
+
+            if (minDistance > nextPlatformDistance[z] && add == true) {
+                var nextPlatformWidth;
+                nextPlatformWidth = Phaser.Math.Between(options.platformSizeRange[0], options.platformSizeRange[1]);
+                this.addPlatform(nextPlatformWidth, game.config.width + nextPlatformWidth / 2, platformY, z);
+                
+            }
+        }
+            
         }
 
 
@@ -379,28 +414,65 @@
         {
 
             this.time.addEvent({ delay: 8000, callback: showSky, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 25000, callback: showBomb, callbackScope: this, loop: true });
             this.time.addEvent({ delay: 500, callback: showStars, callbackScope: this, loop: false });
             this.time.addEvent({ delay: 1500, callback: starsMove, callbackScope: this, loop: false });
             this.time.addEvent({ delay: 42000, callback: hideSky, callbackScope: this, loop: false });
             this.time.addEvent({ delay: 62000, callback: showSky, callbackScope: this, loop: false });
+            //this.time.addEvent({ delay: 58000, callback: goStart, callbackScope: this, loop: false });
+
+            //this.time.addEvent({ delay: 60000, callback: goStart, callbackScope: this, loop: false });
+
             this.time.addEvent({ delay: 89000, callback: hideSky, callbackScope: this, loop: false });
             this.time.addEvent({ delay: 109000, callback: showSky, callbackScope: this, loop: false });
+            //this.time.addEvent({ delay: 60000, callback: goStart, callbackScope: this, loop: false });
+
+
             this.time.addEvent({ delay: 146000, callback: hideSky, callbackScope: this, loop: false });
             this.time.addEvent({ delay: 166000, callback: showSky, callbackScope: this, loop: false });
 
             var camera = this.cameras.main;
 
-            this.platformGroup = this.add.group({
+            this.platformGroup = new Array(3);
+            this.platformPool = new Array(3);
+
+
+            this.platformGroup[0] = this.add.group({
                 removeCallback: function(platform) {
-                    platform.scene.platformPool.add(platform)
+                    platform.scene.platformPool[0].add(platform)
                 }
             });
 
-            this.platformPool = this.add.group({
+            this.platformPool[0] = this.add.group({
                 removeCallback: function(platform) {
-                    platform.scene.platformGroup.add(platform)
+                    platform.scene.platformGroup[0].add(platform)
                 } 
             });
+
+            this.platformGroup[1] = this.add.group({
+                removeCallback: function(platform) {
+                    platform.scene.platformPool[1].add(platform)
+                }
+            });
+
+            this.platformPool[1] = this.add.group({
+                removeCallback: function(platform) {
+                    platform.scene.platformGroup[1].add(platform)
+                } 
+            });
+
+            this.platformGroup[2] = this.add.group({
+                removeCallback: function(platform) {
+                    platform.scene.platformPool[2].add(platform)
+                }
+            });
+
+            this.platformPool[2] = this.add.group({
+                removeCallback: function(platform) {
+                    platform.scene.platformGroup[2].add(platform)
+                } 
+            });
+
 
             this.starGroup = this.add.group({
                 removeCallback: function(star) {
@@ -427,20 +499,37 @@
             this.physics.add.existing(ground, true);
             this.physics.add.collider(this.player, ground);
 
-            this.addPlatform(0, 400, 500);
+            this.addPlatform(0, 0, 0, 0);
+            this.addPlatform(0, 0, 0, 1);
+            this.addPlatform(0, 0, 0, 2);
 
-            this.physics.add.collider(this.player, this.platformGroup);
+        
+
+
+            for (x = 0; x < 3; x++) {
+            this.physics.add.collider(this.player, this.platformGroup[x]);
+            }
+
+            this.physics.add.overlap(this.player, this.starGroup, collectStar, null, this);
+            
 
             
             this.anims.create({
-                key: 'right',
+                key: 'running',
                 frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 2 }),
                 frameRate: 7.5,
                 repeat: -1
             });
 
+            this.anims.create({
+                key: 'bombed',
+                frames: this.anims.generateFrameNumbers('dude-bombed', { start: 0, end: 2 }),
+                frameRate: 7.5,
+                repeat: -1
+            });
 
-            this.player.anims.play('right');
+
+            this.player.anims.play('running');
         
             this.initialTime = 180;
     
@@ -467,25 +556,46 @@
             
         }   
 
-        gameScene.addPlatform = function(platformWidth, posX, posY) {
+        gameScene.addPlatform = function(platformWidth, posX, posY, platformIndex) {
                  let platform;
-                 if (this.platformPool.getLength()) {
-                    platform = this.platformPool.getFirst();
+                 if (this.platformPool[platformIndex].getLength()) {
+                    platform = this.platformPool[platformIndex].getFirst();
                     platform.x = posX;
                     platform.y = posY;
                     platform.active = true;
                     platform.visible = true;
-                    this.platformPool.remove(platform);
+                    this.platformPool[platformIndex].remove(platform);
                  } else {
                     platform = this.physics.add.sprite(posX, posY, 'platform');
                     platform.setImmovable(true);
                     platform.setFrictionX(0);
                     platform.setVelocityX(-options.speed);
-                    this.platformGroup.add(platform);
+                    this.platformGroup[platformIndex].add(platform);
                  }
                 platform.displayWidth = platformWidth;
-                this.nextPlatformDistance = Phaser.Math.Between(options.spawnRange[0], options.spawnRange[1]);
-            }
+
+                nextPlatformDistance[platformIndex] = Phaser.Math.Between(options.spawnRange[0], options.spawnRange[1]);
+                var offset = Phaser.Math.Between(-platformWidth / 2, platformWidth / 2);
+
+                    
+                        if (Phaser.Math.Between(1, 100) <= 70) {
+                        for (x = 0; x < Phaser.Math.Between(1, 4); x++) {
+                        var star = this.physics.add.sprite(posX + Phaser.Math.Between(-platformWidth / 2, platformWidth / 2), posY - 20, 'star');
+                        star.setImmovable(true);
+                        star.setVelocityX(-options.speed);
+                        this.starGroup.add(star);
+                        }
+                    }
+                    
+
+                    if (Phaser.Math.Between(1, 100) <= 25) {
+                        let floorStar = this.physics.add.sprite(posX + offset, 580, 'star');
+                        floorStar.setImmovable(true);
+                        floorStar.setVelocityX(-options.speed);
+                        this.starGroup.add(floorStar);
+                    }
+        }
+            
     
         function checkPlaying() {
             if (instructionsScene.music.seek > 0) {
@@ -519,31 +629,86 @@
 
             fallingStars = this.physics.add.group({
                 key: 'star',
-                repeat: 11,
-                setXY: { x: 12, y: 0, stepX: 70 }
+                repeat: 7,
+                setXY: { x: game.config.width / 2 - 100, y: 0, stepX: 50 }
             });
 
             fallingStars.children.iterate(function (child) {
 
                 //  Give each star a slightly different bounce
                 child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
-                child.setGravityY(1000);
-                //child.setVelocityX(-84);
+                child.setGravityY(800);
             });
 
             this.physics.add.overlap(gameScene.player, fallingStars, collectStar, null, this);
-            this.physics.add.collider(fallingStars, gameScene.platformGroup);
+            for (x = 0; x < 3; x++) {
+            this.physics.add.collider(fallingStars, gameScene.platformGroup[x]);
+            }
             this.physics.add.collider(fallingStars, ground);
+
 
 
         }
 
+        function showBomb() {
+
+        var dropOrSide = Phaser.Math.RND.pick([1, 2]);
+
+        if (dropOrSide == 1) {
+        this.fallingBombs = this.physics.add.group({
+            key: 'bomb',
+            repeat: 4,
+            setXY: { x: game.config.width / 2 - 80, y: 0, stepX: 100 },
+        });
+
+        this.fallingBombs.children.iterate(function (child) {
+            child.setBounceY(Phaser.Math.FloatBetween(0.6, 1.0));
+            child.setGravityY(500);
+            child.setScale(1.5);
+        });
+    } else {
+        this.fallingBombs = this.physics.add.group({
+            key: 'bomb',
+            repeat: 4,
+            setXY: { x: game.config.width, y: 0, stepY: 100 },
+        });
+
+        this.fallingBombs.children.iterate(function (child) {
+            child.setBounceY(Phaser.Math.FloatBetween(0.6, 1.0));
+            child.setGravityY(500);
+            child.setVelocityX(2 * (-options.speed))
+            child.setScale(1.5);
+        });
+    }
+
+    
+        this.physics.add.overlap(gameScene.player, this.fallingBombs, hitBomb, null, this);
+        for (x = 0; x < 3; x++) {
+        this.physics.add.collider(this.fallingBombs, gameScene.platformGroup[x]);
+        }
+
+        this.physics.add.collider(this.fallingBombs, ground);
+
+        this.time.addEvent({ delay: 4000, callback: moveObject, callbackScope: this, loop: false });
+
+
+}
+
+
+        
+
+
+        function moveObject() {
+            this.fallingBombs.children.iterate(function (child) {
+                child.setVelocityX(-options.speed);
+                });
+        }
+
+
+
         function starsMove() {
             fallingStars.children.iterate(function (child) {
-
-            //  Give each star a slightly different bounce
-
-                child.setVelocityX(-84);
+                child.setVelocityX(-options.speed);
                 });
         }
 
@@ -552,9 +717,32 @@
             star.disableBody(true, true);
 
             //  Add and update the score
-            score += 10;
+            score += 2;
             scoreText.setText('Score: ' + score);
 
+        }
+
+        function goStart() {
+            add = false;
+        }
+
+        function goEnd(){
+            add = true;
+        }
+
+        function hitBomb (player, bomb) {
+            bomb.disableBody(true, true);
+
+            gameScene.player.anims.play('bombed');
+            //gameScene.player.setTint('#c23838');
+            async function stopFlashingRed() {
+                await timer(1000);
+                gameScene.player.anims.play('running');
+                //gameScene.player.clearTint();
+            }
+            stopFlashingRed();
+            score -= 10;
+            scoreText.setText('Score: ' + score);
         }
         
 
@@ -581,6 +769,7 @@
 
         leaderboardScene.create = async function() {
 
+
             leaderBoard = this.plugins.get('rexfirebaseplugin').add.leaderBoard({
             root: 'scores',
             // timeFilters: false,
@@ -590,16 +779,43 @@
             // tag: undefined
             });
 
+            this.add.graphics({ fillStyle: { color: 0x000000} }).fillRoundedRect(290, 38, 395, 610, 15);
 
-            // leaderBoard.setUser('testuid2', "help");
+            // leaderBoard.setUser('testuid2');
             // await leaderBoard.post(900);
 
-            var scoresRetrieved = await leaderBoard.loadFirstPage();
+            if (localStorage.getItem('userID') == null) {
+                this.maximumChars = 10;
 
 
-            this.add.graphics({ fillStyle: { color: 0x000000} }).fillRoundedRect(290, 38, 395, 610, 15);
+                this.add.text(game.config.width / 2, 200, 'ENTER A NAME TO ADD YOUR\nSCORE TO THE LEADERBOARD:', { fontFamily: "VCR", fontSize: '18pt'}).setOrigin(0.5);
+                var inputText = this.add.rexInputText(game.config.width / 2, 300, 150, 30, {
+                    type: 'text',
+                    text: 'hello world',
+                    fontSize: '20px',
+                    border: 0.5,
+                    borderColor: '#ffffff'
+        })
+            this.add.text(game.config.width / 2, 350, 'THIS WILL BE SAVED FOR NEXT TIME\nMAX 10 CHARACTERS\nLETTERS, NUMBERS AND UNDERSCORE ONLY', { fontFamily: "VCR", fontSize: '12pt'}).setOrigin(0.5);
+            inputText.on('textchange', function(inputText, e){
+                if (inputText.text.length > this.maximumChars) {
+                    inputText.setText(inputText.text.substr(0, this.maximumChars));
+                }
+                if (inputText.text) {
+
+                }
+             }, this);
+
+
+            } else {
+                var scoresRetrieved = await leaderBoard.loadFirstPage();
+
+
             this.add.text(game.config.width / 2, 80, 'LEADERBOARD', { fontFamily: "VCR", fontSize: '32pt'}).setOrigin(0.5);
 
+            // this.backButton = this.add.text(game.config.width / 2, 630, 'BACK', { fontFamily: "VCR", fontSize: '16pt'}).setOrigin(0.5);
+            // this.backButton.setInteractive({ useHandCursor: true });
+            // this.backButton.on('pointerdown', () => {leaderboardScene.scene.remove(leaderboardScene)});
 
             var displayNumber = 10;
 	        var spacing = 128;
@@ -611,12 +827,15 @@
 
 			    var scoreItem = scoresRetrieved[i]
 
-			    var name = this.add.text(num.x + 30, spacing, scoreItem.userName, {fontFamily: 'VCR', fontSize: '20px'}).setOrigin(0, 0.5)
+			    var name = this.add.text(num.x + 30, spacing, scoreItem.userID, {fontFamily: 'VCR', fontSize: '20px'}).setOrigin(0, 0.5)
 	
 			    this.add.text(name.x + 300, spacing, scoreItem.score.toString(), {fontFamily: 'VCR', fontSize: '20px'}).setOrigin(0, 0.5)	
 		        spacing += 20
                 }
 	            }
+            }
+
+            
 
         }
 
