@@ -37,7 +37,9 @@
 
 <body>
 
-<div id="phaser" style="height:100%; width:100%"></div>
+<div id="phaser" style="height:100%; width:100%">
+    <canvas width="970" height="686"></canvas>
+</div>
 
 <script type="text/javascript">
 
@@ -64,6 +66,7 @@
     var gameScene = new Phaser.Scene('gameScene');
     var welcomeScene = new Phaser.Scene('welcomeScene');
     var animateScene = new Phaser.Scene('animateScene');
+    var gameOverScene = new Phaser.Scene('gameOverScene');
     var leaderboardScene = new Phaser.Scene('leaderboardScene');
     
 
@@ -88,7 +91,7 @@
                 mode: Phaser.Scale.HEIGHT_CONTROLS_WIDTH, //Works in portrait and landscape
                 autoCenter: Phaser.Scale.CENTER_BOTH,
             },
-            scene: [bootScene, welcomeScene, instructionsScene, animateScene, gameScene, leaderboardScene]
+            scene: [bootScene, welcomeScene, instructionsScene, animateScene, gameScene, gameOverScene, leaderboardScene]
         };
 
         const firebaseConfig = {
@@ -105,7 +108,6 @@
 
     
         window.focus();
-        window.resizeTo(970, 686);
 
         var game = new Phaser.Game(config);
         var dropHeight = 200;
@@ -135,6 +137,7 @@
         var add = true;
         var added = false;
         var movePlatforms = false;
+        var scaleIndex = 1;
         
 
 
@@ -164,6 +167,7 @@
             this.load.spritesheet('dude', 'assets/spritesheet.png', { frameWidth: 34, frameHeight: 34 });
             this.load.spritesheet('dude-bombed', 'assets/spritesheet-bombed.png', { frameWidth: 32, frameHeight: 32 });
             this.load.image('platform', 'assets/platform-3.png');
+            this.load.image('gameoversign', 'assets/gameoversign.png');
             this.load.plugin('rexfirebaseplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexfirebaseplugin.min.js', true);
             this.load.plugin('rexinputtextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js', true);
 
@@ -184,9 +188,11 @@
             
 
             this.skyCamera = this.cameras.main;
+
             
             
-            this.scene.launch(welcomeScene);
+            
+            this.scene.launch(gameOverScene);
         }
         
         
@@ -659,18 +665,49 @@
             return `${minutes}:${partInSeconds}`;
         }
     
-    
+        
         function timerEvent ()
         {
             if (this.initialTime == 0)
             {
                 this.time.removeAllEvents();
             } else {
-        
+
+            if (this.initialTime == 1) {
+                this.scene.launch(gameOverScene);
+            }
+            
             this.initialTime -= 1; // One second
             text.setText(formatTime(this.initialTime));
             }
         }
+
+        
+
+        gameOverScene.create = function() {
+            this.backdrop = this.add.graphics({ fillStyle: { color: 0x000000} }).fillRoundedRect(290, 38, 395, 630, 15);
+            this.backdrop.alpha = 0;
+            this.gameoversign = this.add.image(game.config.width / 2, game.config.height / 2, 'gameoversign');
+
+            async function gameOverStill() {
+            await timer(2000);
+            
+            while (gameOverScene.gameoversign.y > 100) {
+                scaleIndex -= 0.01;
+                
+                gameOverScene.backdrop.alpha += 0.015;
+                gameOverScene.gameoversign.y -= 4;
+                gameOverScene.gameoversign.setScale(scaleIndex);
+                await timer(16);
+            }
+            // gameOverScene.scene.pause(animateScene);
+            // gameOverScene.scene.pause(gameScene);
+            gameOverScene.scene.launch(leaderboardScene);
+        }
+            gameOverStill();
+        
+        }
+        
 
         function showStars() {
 
@@ -694,7 +731,7 @@
             this.physics.add.collider(fallingStars, ground);
 
 
-
+ 
         }
 
         function showBomb() {
@@ -844,7 +881,7 @@
             // tag: undefined
             });
 
-            this.add.graphics({ fillStyle: { color: 0x000000} }).fillRoundedRect(290, 38, 395, 610, 15);
+            //this.add.graphics({ fillStyle: { color: 0x000000} }).fillRoundedRect(290, 38, 395, 610, 15);
 
             // leaderBoard.setUser('testuid2');
             // await leaderBoard.post(900);
@@ -853,20 +890,23 @@
                 this.maximumChars = 10;
 
 
-                this.add.text(game.config.width / 2, 200, 'ENTER A NAME TO ADD YOUR\nSCORE TO THE LEADERBOARD:', { fontFamily: "VCR", fontSize: '18pt'}).setOrigin(0.5);
+                this.add.text(game.config.width / 2, 200, 'ENTER A NAME TO ADD YOUR', { fontFamily: "VCR", fontSize: '16pt'}).setOrigin(0.5);
+                this.add.text(game.config.width / 2, 220, 'HIGH SCORE TO THE LEADERBOARD:', { fontFamily: "VCR", fontSize: '16pt'}).setOrigin(0.5);
+                this.add.text(game.config.width / 2, 380, 'YOUR NAME WILL BE SAVED FOR NEXT TIME', { fontFamily: "VCR", fontSize: '12pt'}).setOrigin(0.5);
+
                 var inputText = this.add.rexInputText(game.config.width / 2, 300, 150, 30, {
                     type: 'text',
-                    text: 'hello world',
+                    placeholder: 'NICKNAME',
                     fontSize: '20px',
+                    fontFamily: 'VCR',
                     border: 0.5,
                     borderColor: '#ffffff'
         })
-            this.add.text(game.config.width / 2, 350, 'THIS WILL BE SAVED FOR NEXT TIME\nMAX 10 CHARACTERS\nLETTERS, NUMBERS AND UNDERSCORE ONLY', { fontFamily: "VCR", fontSize: '12pt'}).setOrigin(0.5);
             inputText.on('textchange', function(inputText, e){
                 if (inputText.text.length > this.maximumChars) {
                     inputText.setText(inputText.text.substr(0, this.maximumChars));
                 }
-                if (inputText.text) {
+                if (inputText.text.slice(input.text.length - 1)  ) {
 
                 }
              }, this);
