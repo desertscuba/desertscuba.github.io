@@ -23,6 +23,7 @@
     body {
         margin: 0;
         height: 100%;
+        width: 100%;
         background: black;
         }
 </style>
@@ -36,7 +37,7 @@
 
 <body>
 
-<div id="phaser" style="height:100%;"></div>
+<div id="phaser" style="height:100%; width:100%"></div>
 
 <script type="text/javascript">
 
@@ -64,6 +65,9 @@
     var welcomeScene = new Phaser.Scene('welcomeScene');
     var animateScene = new Phaser.Scene('animateScene');
     var leaderboardScene = new Phaser.Scene('leaderboardScene');
+
+    var width = (window.innerHeight / 686) * 970;
+    var height = window.innerHeight;
 
         var config = {
             type: Phaser.AUTO,
@@ -121,6 +125,7 @@
         var playing = false;
         var tt;
         var instructions;
+        var camera;
         var tsCamera;
         var scoreText;
         var score = 0;
@@ -129,14 +134,18 @@
         var backButton;
         var nextPlatformDistance = new Array(3);
         var add = true;
+        var added = false;
+        var movePlatforms = false;
         
 
 
         //starting scene removes just scene before. launching doesn't remove any.
-
         game.scene.start(bootScene);
 
         bootScene.preload = function() {
+            this.scale.setGameSize((window.innerHeight / 686) * 970, window.innerHeight);
+
+
             this.load.audio('song', 'assets/game-over.mp3');
             this.load.image('instructions', 'assets/instructions.png');
             this.load.image('startscreen', 'assets/startscreen.png');
@@ -192,8 +201,8 @@
 
             this.add.text(0, 0, '', { fontFamily: "VCR"}); //get font working
 
-            this.startscreen = this.add.image(game.config.width / 2, game.config.height / 2, 'startscreen');
-            this.taptostart = this.add.image(game.config.width / 2, 540, 'taptostart');
+            this.startscreen = this.add.image(width / 2, height / 2, 'startscreen');
+            this.taptostart = this.add.image(width / 2, 540, 'taptostart');
             this.taptostart.alpha = 0;
             this.alphaIndex = 0.04;
 
@@ -201,7 +210,7 @@
             var list = new Array(15);
             var keepGoing = true;
             for (x = 14; x < 29; x++) {
-                list[x] = welcomeScene.add.image(game.config.width / 2, x * 17, 'list');
+                list[x] = welcomeScene.add.image(width / 2, x * 17, 'list');
                 list[x].visible = false;
             }
             await timer(500);
@@ -229,7 +238,7 @@
                 }
             }
             
-            // playButton = this.add.text(game.config.width / 2, 200, 'TAP TO START', { fontFamily: "VCR", fontSize: '32pt'}).setOrigin(0.5);
+            // playButton = this.add.text(width / 2, 200, 'TAP TO START', { fontFamily: "VCR", fontSize: '32pt'}).setOrigin(0.5);
             this.taptostart.setInteractive({ useHandCursor: true });
             // playButton.visible = false;
 
@@ -256,11 +265,11 @@
 
             tsCamera = this.cameras.main;
 
-            mountains = this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'mountains').setOrigin(0, 0);
-            skylineBack = this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'skyline-back').setOrigin(0, 0);
-            skylineMid = this.add.tileSprite(0, game.config.height, game.config.width, game.config.height, 'skyline-mid').setOrigin(0, 0);
-            skylineFront = this.add.tileSprite(0, game.config.height, game.config.width, 232, 'skyline-front').setOrigin(0, 0);
-            ground = this.add.tileSprite(0, game.config.height, game.config.width, 96, 'ground').setOrigin(0, 0);
+            mountains = this.add.tileSprite(0, height, width, height, 'mountains').setOrigin(0, 0);
+            skylineBack = this.add.tileSprite(0, height, width, height, 'skyline-back').setOrigin(0, 0);
+            skylineMid = this.add.tileSprite(0, height, width, height, 'skyline-mid').setOrigin(0, 0);
+            skylineFront = this.add.tileSprite(0, height, width, 232, 'skyline-front').setOrigin(0, 0);
+            ground = this.add.tileSprite(0, height, width, 96, 'ground').setOrigin(0, 0);
 
             mountains.alpha = 0.9;
             skylineBack.alpha = 0.85;
@@ -277,9 +286,9 @@
             async function moveUp() {
                 tt = 35; // total time
                 for (t = 1; t <= tt; t ++) {
-                    mountains.y = distanceAtTime(game.config.height, t);
-                    skylineBack.y = distanceAtTime(game.config.height, t);
-                    skylineMid.y = distanceAtTime(game.config.height, t);
+                    mountains.y = distanceAtTime(height, t);
+                    skylineBack.y = distanceAtTime(height, t);
+                    skylineMid.y = distanceAtTime(height, t);
                     skylineFront.y = distanceAtTime((232 + 96), t);
                     ground.y = distanceAtTime(96, t);  
                     await timer(16);
@@ -306,7 +315,7 @@
 
             this.music = this.sound.add('song');
 
-            this.arrow = this.add.text(game.config.width / 2, 150, '→', { fontFamily: "VCR", fontSize: '32pt' }).setOrigin(0.5);            var ins1 = this.add.image(game.config.width / 2, 100, 'ins1');
+            this.arrow = this.add.text(width / 2, 150, '→', { fontFamily: "VCR", fontSize: '32pt' }).setOrigin(0.5);            var ins1 = this.add.image(width / 2, 100, 'ins1');
             this.alphaIndexArrow = 0.04;
 
             this.time.addEvent({ delay: 30, callback: pulseArrow, callbackScope: this, loop: true });
@@ -320,9 +329,9 @@
 
 
 
-            var ins2 = this.add.image(game.config.width / 2, 100, 'ins2');
-            var ins3 = this.add.image(game.config.width / 2, 100, 'ins3').setScale(0.25);
-            var ins4 = this.add.image(game.config.width / 2, 100, 'ins4');
+            var ins2 = this.add.image(width / 2, 100, 'ins2');
+            var ins3 = this.add.image(width / 2, 100, 'ins3').setScale(0.25);
+            var ins4 = this.add.image(width / 2, 100, 'ins4');
             ins2.visible = false;
             ins3.visible = false;
             ins4.visible = false;
@@ -355,7 +364,7 @@
             var a = (v - u) / tt;
 
             var s = (u * t) + (0.5 * a * t ** 2);
-            return (game.config.height - s);
+            return (height - s);
         }   
          
 
@@ -378,9 +387,9 @@
 
 
             for (z = 0; z < 3; z++) {
-            var minDistance = game.config.width;
+            var minDistance = width;
             this.platformGroup[z].getChildren().forEach(function(platform){
-                var platformDistance = game.config.width - platform.x - platform.displayWidth / 2;
+                var platformDistance = width - platform.x - platform.displayWidth / 2;
                 minDistance = Math.min(minDistance, platformDistance);
                 if (platform.x < - platform.displayWidth / 2) {
                     this.platformGroup[z].killAndHide(platform);
@@ -402,9 +411,21 @@
             if (minDistance > nextPlatformDistance[z] && add == true) {
                 var nextPlatformWidth;
                 nextPlatformWidth = Phaser.Math.Between(options.platformSizeRange[0], options.platformSizeRange[1]);
-                this.addPlatform(nextPlatformWidth, game.config.width + nextPlatformWidth / 2, platformY, z);
+                this.addPlatform(nextPlatformWidth, width + nextPlatformWidth / 2, platformY, z);
                 
+            } else if (add == false && added == false) {
+                this.addPlatform(100, width + 100 / 2, platformY, z);
+                added = true;
+                this.player.setBounce(0);
+                movePlatforms = true;
+            } else if (movePlatforms == true) {
+                this.platformA[0].y = (height / 2) + 200 * Math.sin(this.platformA[0].x / 100);
+                this.platformA[1].y = (height / 2) + 200 * Math.sin(this.platformA[0].x / 100 - Math.PI);
+                this.platformA[2].y = (height / 2) + 200 * Math.sin(this.platformA[0].x / 100);
+                this.platformA[3].y = (height / 2) + 200 * Math.sin(this.platformA[0].x / 100 - Math.PI);
+                //this.platformA[4].y = (height / 2) + 200 * Math.sin(this.platformA[0].x / 100);
             }
+
         }
             
         }
@@ -414,12 +435,24 @@
         {
 
             this.time.addEvent({ delay: 8000, callback: showSky, callbackScope: this, loop: false });
+
+            this.time.addEvent({ delay: 166000, callback: upsideDown, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 179000, callback: upsideDown, callbackScope: this, loop: false });
+
+
             this.time.addEvent({ delay: 25000, callback: showBomb, callbackScope: this, loop: true });
             this.time.addEvent({ delay: 500, callback: showStars, callbackScope: this, loop: false });
             this.time.addEvent({ delay: 1500, callback: starsMove, callbackScope: this, loop: false });
             this.time.addEvent({ delay: 42000, callback: hideSky, callbackScope: this, loop: false });
             this.time.addEvent({ delay: 62000, callback: showSky, callbackScope: this, loop: false });
-            //this.time.addEvent({ delay: 58000, callback: goStart, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 57000, callback: goStart, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 66000, callback: goEnd, callbackScope: this, loop: false });
+
+            this.time.addEvent({ delay: 104000, callback: goStart, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 113000, callback: goEnd, callbackScope: this, loop: false });
+
+            this.time.addEvent({ delay: 161000, callback: goStart, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 170000, callback: goEnd, callbackScope: this, loop: false });
 
             //this.time.addEvent({ delay: 60000, callback: goStart, callbackScope: this, loop: false });
 
@@ -431,7 +464,7 @@
             this.time.addEvent({ delay: 146000, callback: hideSky, callbackScope: this, loop: false });
             this.time.addEvent({ delay: 166000, callback: showSky, callbackScope: this, loop: false });
 
-            var camera = this.cameras.main;
+            camera = this.cameras.main;
 
             this.platformGroup = new Array(3);
             this.platformPool = new Array(3);
@@ -489,7 +522,7 @@
             
 
             //this.physics.world.setFPS(30);
-            this.player = this.physics.add.sprite(game.config.width / 2 - 80, dropHeight, 'dude').setScale(1.5);
+            this.player = this.physics.add.sprite(width / 2 - 80, dropHeight, 'dude').setScale(1.5);
             this.player.setGravityY(options.gravity);
 
             
@@ -533,8 +566,8 @@
         
             this.initialTime = 180;
     
-            scoreText = this.add.text(game.config.width / 2, 60, 'Score: 0', { fontFamily: "VCR", fontSize: '16pt' }).setOrigin(0.5);
-            text = this.add.text(game.config.width / 2, 32, formatTime(this.initialTime), { fontFamily: "VCR", fontSize: '16pt' }).setOrigin(0.5);
+            scoreText = this.add.text(width / 2, 60, 'Score: 0', { fontFamily: "VCR", fontSize: '16pt' }).setOrigin(0.5);
+            text = this.add.text(width / 2, 32, formatTime(this.initialTime), { fontFamily: "VCR", fontSize: '16pt' }).setOrigin(0.5);
 
             this.time.addEvent({ delay: 1000, callback: timerEvent, callbackScope: this, loop: true });
 
@@ -558,21 +591,38 @@
 
         gameScene.addPlatform = function(platformWidth, posX, posY, platformIndex) {
                  let platform;
-                 if (this.platformPool[platformIndex].getLength()) {
+                 if (add == false) {
+                    this.platformA = new Array(5);
+                    for (x = 0; x < 4; x++) {
+                    this.platformA[x] = this.physics.add.sprite(posX + ((x + 1) * 220), height / 2, 'platform');
+                    this.platformA[x].setImmovable(true);
+                    this.platformA[x].setFrictionX(0);
+                    //this.platformA[x].body.friction.y = 1;
+                    this.platformA[x].setVelocityX(-options.speed);
+                    this.platformGroup[platformIndex].add(this.platformA[x]);
+                    this.platformA[x].displayWidth = 200;
+                    }
+
+                 }
+                 else if (this.platformPool[platformIndex].getLength()) {
                     platform = this.platformPool[platformIndex].getFirst();
                     platform.x = posX;
                     platform.y = posY;
                     platform.active = true;
                     platform.visible = true;
                     this.platformPool[platformIndex].remove(platform);
+                    platform.displayWidth = platformWidth;
+
+                  
                  } else {
                     platform = this.physics.add.sprite(posX, posY, 'platform');
                     platform.setImmovable(true);
                     platform.setFrictionX(0);
                     platform.setVelocityX(-options.speed);
                     this.platformGroup[platformIndex].add(platform);
+                    platform.displayWidth = platformWidth;
+
                  }
-                platform.displayWidth = platformWidth;
 
                 nextPlatformDistance[platformIndex] = Phaser.Math.Between(options.spawnRange[0], options.spawnRange[1]);
                 var offset = Phaser.Math.Between(-platformWidth / 2, platformWidth / 2);
@@ -630,7 +680,7 @@
             fallingStars = this.physics.add.group({
                 key: 'star',
                 repeat: 7,
-                setXY: { x: game.config.width / 2 - 100, y: 0, stepX: 50 }
+                setXY: { x: width / 2 - 100, y: 0, stepX: 50 }
             });
 
             fallingStars.children.iterate(function (child) {
@@ -658,7 +708,7 @@
         this.fallingBombs = this.physics.add.group({
             key: 'bomb',
             repeat: 4,
-            setXY: { x: game.config.width / 2 - 80, y: 0, stepX: 100 },
+            setXY: { x: width / 2 - 80, y: 0, stepX: 100 },
         });
 
         this.fallingBombs.children.iterate(function (child) {
@@ -670,7 +720,7 @@
         this.fallingBombs = this.physics.add.group({
             key: 'bomb',
             repeat: 4,
-            setXY: { x: game.config.width, y: 0, stepY: 100 },
+            setXY: { x: width, y: 0, stepY: 100 },
         });
 
         this.fallingBombs.children.iterate(function (child) {
@@ -728,6 +778,14 @@
 
         function goEnd(){
             add = true;
+            added = false;
+            this.time.addEvent({ delay: 8000, callback: goStop, callbackScope: this, loop: false });
+
+        }
+
+        function goStop() {
+            movePlatforms = false;
+            gameScene.player.setBounce(0.4);
         }
 
         function hitBomb (player, bomb) {
@@ -743,6 +801,16 @@
             stopFlashingRed();
             score -= 10;
             scoreText.setText('Score: ' + score);
+        }
+        
+        function upsideDown() {
+            camera.rotateTo(Math.PI, false, 10000);
+            tsCamera.rotateTo(Math.PI, false, 10000);            
+        }
+
+        function upsideUp() {
+            camera.rotateTo(0, false, 1000);
+            tsCamera.rotateTo(0, false, 1000); 
         }
         
 
@@ -788,15 +856,15 @@
                 this.maximumChars = 10;
 
 
-                this.add.text(game.config.width / 2, 200, 'ENTER A NAME TO ADD YOUR\nSCORE TO THE LEADERBOARD:', { fontFamily: "VCR", fontSize: '18pt'}).setOrigin(0.5);
-                var inputText = this.add.rexInputText(game.config.width / 2, 300, 150, 30, {
+                this.add.text(width / 2, 200, 'ENTER A NAME TO ADD YOUR\nSCORE TO THE LEADERBOARD:', { fontFamily: "VCR", fontSize: '18pt'}).setOrigin(0.5);
+                var inputText = this.add.rexInputText(width / 2, 300, 150, 30, {
                     type: 'text',
                     text: 'hello world',
                     fontSize: '20px',
                     border: 0.5,
                     borderColor: '#ffffff'
         })
-            this.add.text(game.config.width / 2, 350, 'THIS WILL BE SAVED FOR NEXT TIME\nMAX 10 CHARACTERS\nLETTERS, NUMBERS AND UNDERSCORE ONLY', { fontFamily: "VCR", fontSize: '12pt'}).setOrigin(0.5);
+            this.add.text(width / 2, 350, 'THIS WILL BE SAVED FOR NEXT TIME\nMAX 10 CHARACTERS\nLETTERS, NUMBERS AND UNDERSCORE ONLY', { fontFamily: "VCR", fontSize: '12pt'}).setOrigin(0.5);
             inputText.on('textchange', function(inputText, e){
                 if (inputText.text.length > this.maximumChars) {
                     inputText.setText(inputText.text.substr(0, this.maximumChars));
@@ -811,9 +879,9 @@
                 var scoresRetrieved = await leaderBoard.loadFirstPage();
 
 
-            this.add.text(game.config.width / 2, 80, 'LEADERBOARD', { fontFamily: "VCR", fontSize: '32pt'}).setOrigin(0.5);
+            this.add.text(width / 2, 80, 'LEADERBOARD', { fontFamily: "VCR", fontSize: '32pt'}).setOrigin(0.5);
 
-            // this.backButton = this.add.text(game.config.width / 2, 630, 'BACK', { fontFamily: "VCR", fontSize: '16pt'}).setOrigin(0.5);
+            // this.backButton = this.add.text(width / 2, 630, 'BACK', { fontFamily: "VCR", fontSize: '16pt'}).setOrigin(0.5);
             // this.backButton.setInteractive({ useHandCursor: true });
             // this.backButton.on('pointerdown', () => {leaderboardScene.scene.remove(leaderboardScene)});
 
