@@ -23,7 +23,6 @@
     body {
         margin: 0;
         height: 100%;
-        width: 100%;
         background: black;
         }
 </style>
@@ -37,9 +36,7 @@
 
 <body>
 
-<div id="phaser" style="height:100%; width:100%">
-    <canvas width="970" height="686"></canvas>
-</div>
+<div id="phaserdiv"></div>
 
 <script type="text/javascript">
 
@@ -74,6 +71,7 @@
             type: Phaser.AUTO,
             width: 970,
             height: 686,
+            parent: "phaserdiv",
             physics: {
                 default: 'arcade',
                 arcade: {
@@ -87,7 +85,6 @@
             disableWebAudio: true //web audio doesn't play with silent mode on
             },
             scale: {
-                parent: "phaser",
                 mode: Phaser.Scale.HEIGHT_CONTROLS_WIDTH, //Works in portrait and landscape
                 autoCenter: Phaser.Scale.CENTER_BOTH,
             },
@@ -896,7 +893,7 @@
 
                 var inputText = this.add.rexInputText(game.config.width / 2, 300, 150, 30, {
                     type: 'text',
-                    placeholder: 'NICKNAME',
+                    placeholder: 'NICKNAM',
                     fontSize: '20px',
                     fontFamily: 'VCR',
                     border: 0.5,
