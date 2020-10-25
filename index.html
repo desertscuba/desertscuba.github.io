@@ -64,6 +64,7 @@
     var welcomeScene = new Phaser.Scene('welcomeScene');
     var animateScene = new Phaser.Scene('animateScene');
     var gameOverScene = new Phaser.Scene('gameOverScene');
+    var setNameScene = new Phaser.Scene('setNameScene');
     var leaderboardScene = new Phaser.Scene('leaderboardScene');
 
     
@@ -89,7 +90,7 @@
                 mode: Phaser.Scale.HEIGHT_CONTROLS_WIDTH, //Works in portrait and landscape
                 autoCenter: Phaser.Scale.CENTER_BOTH,
             },
-            scene: [bootScene, welcomeScene, instructionsScene, animateScene, gameScene, gameOverScene, leaderboardScene]
+            scene: [bootScene, welcomeScene, instructionsScene, animateScene, gameScene, gameOverScene, setNameScene, leaderboardScene]
         };
 
         const firebaseConfig = {
@@ -135,8 +136,13 @@
         var add = true;
         var added = false;
         var movePlatforms = false;
-        var scaleIndex = 1;
+        var scaleIndex = 0.8;
         var pressedPlay = false;
+        var previousTextLength = 0;
+        var inputText;
+        var scoresRetrieved;
+        var usernameReal;
+        var newUser = false;
         
 
 
@@ -169,6 +175,8 @@
             this.load.image('gameoversign', 'assets/gameoversign.png');
             this.load.plugin('rexfirebaseplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexfirebaseplugin.min.js', true);
             this.load.plugin('rexinputtextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js', true);
+            this.load.plugin('rexgridtableplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexgridtableplugin.min.js', true);
+            this.load.plugin('rexscrollerplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexscrollerplugin.min.js', true);
 
 
 
@@ -673,10 +681,12 @@
         {
             if (this.initialTime == 0)
             {
+                scoreText.visible = false;
+                text.visible = false;
                 this.time.removeAllEvents();
             } else {
 
-            if (this.initialTime == 1) {
+            if (this.initialTime == 2) {
                 this.scene.launch(gameOverScene);
             }
             
@@ -687,28 +697,73 @@
 
         
 
-        gameOverScene.create = function() {
+        gameOverScene.create = async function() {
+
+            leaderBoard = this.plugins.get('rexfirebaseplugin').add.leaderBoard({
+            root: 'scores',
+            // timeFilters: false,
+            // timeFilterType: 'year',
+            // pageItemCount: 100,
+            // boardID: undefined,
+            // tag: undefined
+            });
+
+
+            
+
+            retrieveScores();
+
+            
+
+ 
+
             this.backdrop = this.add.graphics({ fillStyle: { color: 0x000000} }).fillRoundedRect(290, 38, 395, 630, 15);
             this.backdrop.alpha = 0;
             this.gameoversign = this.add.image(game.config.width / 2, game.config.height / 2, 'gameoversign').setScale(0.8);
 
-            async function gameOverStill() {
             await timer(2000);
             
-            while (gameOverScene.gameoversign.y > 100) {
-                scaleIndex -= 0.01;
+            while (this.gameoversign.y > 100) {
+                scaleIndex -= 0.006;
                 
-                gameOverScene.backdrop.alpha += 0.015;
-                gameOverScene.gameoversign.y -= 4;
-                gameOverScene.gameoversign.setScale(scaleIndex);
+                this.backdrop.alpha += 0.013;
+                this.gameoversign.y -= 4;
+                this.gameoversign.setScale(scaleIndex);
                 await timer(16);
             }
-            // gameOverScene.scene.pause(animateScene);
-            // gameOverScene.scene.pause(gameScene);
-            gameOverScene.scene.launch(leaderboardScene);
+
+            this.scene.pause(animateScene);
+            this.scene.pause(gameScene);
+
+            var usernamePotential = localStorage.getItem('userID');
+            var userExists = false;
+
+            if (usernamePotential == null) {
+                userExists = false;
+            } else {
+            for (i = 0; i < scoresRetrieved.length; i++) {
+                if (scoresRetrieved[i].userID == usernamePotential && userExists == false) {
+                    userExists = true;
+                    usernameReal = usernamePotential;
+                    this.scene.launch(leaderboardScene);
+                }
+            }
         }
-            gameOverStill();
+
+            if (userExists == false) {
+                newUser = true;
+                this.scene.launch(setNameScene);
+            }
         
+        
+        }
+
+        async function retrieveScores() {
+            scoresRetrieved = await leaderBoard.loadFirstPage();
+
+            while (!(leaderBoard.isLastPage)) {
+                scoresRetrieved = scoresRetrieved.concat(await leaderBoard.loadNextPage());
+            }
         }
         
 
@@ -871,33 +926,20 @@
         hide();
         }
 
+        setNameScene.create = function() {
 
-        leaderboardScene.create = async function() {
-
-
-            leaderBoard = this.plugins.get('rexfirebaseplugin').add.leaderBoard({
-            root: 'scores',
-            // timeFilters: false,
-            // timeFilterType: 'year',
-            // pageItemCount: 100,
-            // boardID: undefined,
-            // tag: undefined
-            });
-
-            //this.add.graphics({ fillStyle: { color: 0x000000} }).fillRoundedRect(290, 38, 395, 610, 15);
-
-            // leaderBoard.setUser('testuid2');
-            // await leaderBoard.post(900);
-
-            if (localStorage.getItem('userID') == null) {
-                this.maximumChars = 10;
+            this.maximumChars = 10;
 
 
                 this.add.text(game.config.width / 2, 200, 'ENTER A NAME TO ADD YOUR', { fontFamily: "VCR", fontSize: '16pt'}).setOrigin(0.5);
                 this.add.text(game.config.width / 2, 220, 'HIGH SCORE TO THE LEADERBOARD:', { fontFamily: "VCR", fontSize: '16pt'}).setOrigin(0.5);
                 this.add.text(game.config.width / 2, 380, 'YOUR NAME WILL BE SAVED FOR NEXT TIME', { fontFamily: "VCR", fontSize: '12pt'}).setOrigin(0.5);
+                this.next = this.add.text(game.config.width / 2, 500, 'NEXT →', { fontFamily: "VCR", fontSize: '16pt'}).setOrigin(0.5);
+                
+                this.takenError = this.add.text(game.config.width / 2, 420, 'SORRY, THAT NAME IS ALREADY IN USE', { fontFamily: "VCR", fontSize: '12pt', color: '#FF0000'}).setOrigin(0.5);
+                this.takenError.visible = false;
 
-                var inputText = this.add.rexInputText(game.config.width / 2, 300, 150, 30, {
+                inputText = this.add.rexInputText(game.config.width / 2, 300, 150, 30, {
                     type: 'text',
                     placeholder: 'NICKNAME',
                     fontSize: '20px',
@@ -905,43 +947,141 @@
                     border: 0.5,
                     borderColor: '#ffffff'
         })
+
             inputText.on('textchange', function(inputText, e){
+                inputText.setText(inputText.text.substr(0, previousTextLength + 1).toUpperCase());
                 if (inputText.text.length > this.maximumChars) {
                     inputText.setText(inputText.text.substr(0, this.maximumChars));
                 }
-                if (inputText.text.slice(input.text.length - 1)  ) {
+                var c = inputText.text.charAt(inputText.text.length - 1);
+                if (!((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == "_"))) {
+                    inputText.setText(inputText.text.substr(0, inputText.text.length - 1));
+                } 
 
-                }
+                previousTextLength = inputText.text.length;
              }, this);
 
+            this.next.setInteractive({ useHandCursor: true });
+            this.next.on('pointerdown', () => {
+            for (i = 0; i < scoresRetrieved.length; i++) {
+                 if (inputText.text == scoresRetrieved[i].userID) {
+                     this.takenError.visible = true;
+                 }
+            }
+            if (this.takenError.visible == false) {
+                usernameReal = inputText.text;
+                localStorage.setItem('userID', usernameReal);
+                this.scene.start(leaderboardScene);
+            }
+             })
 
-            } else {
-                var scoresRetrieved = await leaderBoard.loadFirstPage();
+        }
+
+        leaderboardScene.create = async function() {
+
+            this.add.text(game.config.width / 2, 160, 'LEADERBOARD', { fontFamily: "VCR", fontSize: '30pt'}).setOrigin(0.5);
+
+            leaderBoard.setUser(usernameReal);
+
+            var highScore = await leaderBoard.getScore();
+            highScore = highScore.score;
+
+            if (newUser == true || score > highScore) {
+                this.add.text(game.config.width / 2, 270, 'NEW HIGH SCORE!', { fontFamily: "VCR", fontSize: '18pt'}).setOrigin(0.5);
+                highScore = score;
+                await leaderBoard.post(score);
+            }
+
+            var rank = await leaderBoard.getRank();
+            rank = rank.rank + 1
+
+            this.add.text(game.config.width / 2, 200, 'YOUR SCORE: ' + score, { fontFamily: "VCR", fontSize: '16pt'}).setOrigin(0.5);
+            this.add.text(game.config.width / 2, 220, 'HIGH SCORE: ' + highScore, { fontFamily: "VCR", fontSize: '16pt'}).setOrigin(0.5);
+            this.add.text(game.config.width / 2, 240, 'RANK: ' + rank, { fontFamily: "VCR", fontSize: '16pt'}).setOrigin(0.5);
+
+            
+            retrieveScores();
+
+            if (scoresRetrieved[rank - 1].userID == usernameReal) {
+                scoresRetrieved[rank - 1].score = score;
+            }
 
 
-            this.add.text(game.config.width / 2, 80, 'LEADERBOARD', { fontFamily: "VCR", fontSize: '32pt'}).setOrigin(0.5);
+            var newCellObject = function (scene, cell) {
+            // var bg = scene.add.graphics()
+            //     .fillStyle(0x000000)
+            //     .fillRect(2, 2, 310 - 2, 40 - 2);
+            var txtRank = scene.add.text(5, 5, (cell.index + 1) + '.', {fontFamily: "VCR", fontSize: '14pt'});
+            var txtUsername = scene.add.text(50, 5, scoresRetrieved[cell.index].userID, {fontFamily: "VCR", fontSize: '14pt'});
+            var txtScore = scene.add.text(240, 5, scoresRetrieved[cell.index].score, {fontFamily: "VCR", fontSize: '14pt'});
+            var container = scene.add.container(0, 0, [txtRank, txtUsername, txtScore]);
+            return container;
+        }
+
+        var onCellVisible = function (cell) {
+            cell.setContainer(newCellObject(this, cell));
+            //console.log('Cell ' + cell.index + ' visible');
+        };
+        var table = this.add.rexGridTable(game.config.width / 2, 470, 310, 340, {
+            cellWidth: 310,
+            cellHeight: 40,
+            cellsCount: scoresRetrieved.length,
+            columns: 1,
+            cellVisibleCallback: onCellVisible.bind(this),
+            clamplTableOXY: false
+        });
+
+        // draw bound
+        // this.add.graphics()
+        //     .lineStyle(3, 0xff0000)
+        //     .strokeRectShape(table.getBounds());
+
+        //drag table content
+        table.scroller = this.plugins.get('rexscrollerplugin').add(table, {
+                bounds: [
+                    table.bottomTableOY,
+                    table.topTableOY
+                ],
+                value: table.topTableOY,
+                slidingDeceleration: 10000,
+                backDeceleration: 2000,
+                valuechangeCallback: function (newValue) {
+                    table.setTableOY(newValue).updateTable();
+                }
+            });
+
+        this.table = table;
+
+
+
+
+
+
+
+
+
 
             // this.backButton = this.add.text(game.config.width / 2, 630, 'BACK', { fontFamily: "VCR", fontSize: '16pt'}).setOrigin(0.5);
             // this.backButton.setInteractive({ useHandCursor: true });
             // this.backButton.on('pointerdown', () => {leaderboardScene.scene.remove(leaderboardScene)});
 
-            var displayNumber = 10;
-	        var spacing = 128;
+            // var displayNumber = 10;
+	        // var spacing = 128;
 
-	        for (let i = 0; i < 10; i++)
-	        {
-                if (i < scoresRetrieved.length) {
-		        var num = this.add.text(300, spacing, `${i + 1}.`, {fontFamily: 'VCR', fontSize: '20px'}).setOrigin(0, 0.5)
+	        // for (let i = 0; i < 10; i++)
+	        // {
+            //     if (i < scoresRetrieved.length) {
+		    //     var num = this.add.text(300, spacing, `${i + 1}.`, {fontFamily: 'VCR', fontSize: '20px'}).setOrigin(0, 0.5)
 
-			    var scoreItem = scoresRetrieved[i]
+			//     var scoreItem = scoresRetrieved[i]
 
-			    var name = this.add.text(num.x + 30, spacing, scoreItem.userID, {fontFamily: 'VCR', fontSize: '20px'}).setOrigin(0, 0.5)
+			//     var name = this.add.text(num.x + 30, spacing, scoreItem.userID, {fontFamily: 'VCR', fontSize: '20px'}).setOrigin(0, 0.5)
 	
-			    this.add.text(name.x + 300, spacing, scoreItem.score.toString(), {fontFamily: 'VCR', fontSize: '20px'}).setOrigin(0, 0.5)	
-		        spacing += 20
-                }
-	            }
-            }
+			//     this.add.text(name.x + 300, spacing, scoreItem.score.toString(), {fontFamily: 'VCR', fontSize: '20px'}).setOrigin(0, 0.5)	
+		    //     spacing += 20
+            //     }
+	        //     }
+            
 
             
 
