@@ -45,7 +45,7 @@
         var options = {
             gravity: 800,
             speed: 120,
-            spawnRange: [40, 120],
+            spawnRange: [50, 120],
             platformSizeRange: [120, 240],
         }
 
@@ -128,7 +128,7 @@
         var camera;
         var tsCamera;
         var scoreText;
-        var score = 4;
+        var score = 0;
         var fallingStars;
         var leaderBoard;
         var backButton;
@@ -169,8 +169,8 @@
 		    this.load.image('skyline-mid', 'assets/mid-new.png');
 		    this.load.image('skyline-front', 'assets/Front2.png' ); 
             this.load.image('ground', 'assets/Ground2.png'); 
-            this.load.spritesheet('dude', 'assets/spritesheet.png', { frameWidth: 34, frameHeight: 34 });
-            this.load.spritesheet('dude-bombed', 'assets/spritesheet-bombed.png', { frameWidth: 32, frameHeight: 32 });
+            this.load.spritesheet('dude', 'assets/dude-new.png', { frameWidth: 26, frameHeight: 34 });
+            this.load.spritesheet('dude-bombed', 'assets/bombed-new.png', { frameWidth: 34, frameHeight: 34 });
             this.load.image('platform', 'assets/platform-3.png');
             this.load.image('gameoversign', 'assets/gameoversign.png');
             this.load.plugin('rexfirebaseplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexfirebaseplugin.min.js', true);
@@ -450,8 +450,7 @@
 
             this.time.addEvent({ delay: 8000, callback: showSky, callbackScope: this, loop: false });
 
-            this.time.addEvent({ delay: 166000, callback: upsideDown, callbackScope: this, loop: false });
-            this.time.addEvent({ delay: 179000, callback: upsideDown, callbackScope: this, loop: false });
+            this.time.addEvent({ delay: 145000, callback: upsideDown, callbackScope: this, loop: false });
 
 
             this.time.addEvent({ delay: 25000, callback: showBomb, callbackScope: this, loop: true });
@@ -1060,7 +1059,7 @@
 
 
 
-            this.playAgain = this.add.text(game.config.width / 2, 670, 'BEAT YOUR SCORE', { fontFamily: "VCR", fontSize: '16pt', backgroundColor: '#ba0000'}).setOrigin(0.5);
+            this.playAgain = this.add.text(game.config.width / 2, 675, 'BEAT YOUR SCORE', { fontFamily: "VCR", fontSize: '16pt', backgroundColor: '#ba0000'}).setOrigin(0.5);
             this.playAgain.setInteractive({ useHandCursor: true });
             this.playAgain.on('pointerdown', () => {location.reload()});
 
