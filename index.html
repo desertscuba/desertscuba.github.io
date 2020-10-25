@@ -128,7 +128,7 @@
         var camera;
         var tsCamera;
         var scoreText;
-        var score = 0;
+        var score = 4;
         var fallingStars;
         var leaderBoard;
         var backButton;
@@ -1003,8 +1003,11 @@
             this.add.text(game.config.width / 2, 220, 'HIGH SCORE: ' + highScore, { fontFamily: "VCR", fontSize: '16pt'}).setOrigin(0.5);
             this.add.text(game.config.width / 2, 240, 'RANK: ' + rank, { fontFamily: "VCR", fontSize: '16pt'}).setOrigin(0.5);
 
-            await timer(500);
-            retrieveScores();
+            scoresRetrieved = await leaderBoard.loadFirstPage();
+
+            while (!(leaderBoard.isLastPage)) {
+                scoresRetrieved = scoresRetrieved.concat(await leaderBoard.loadNextPage());
+            }
 
             
 
