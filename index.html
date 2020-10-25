@@ -1060,7 +1060,9 @@
 
 
 
-
+            this.playAgain = this.add.text(game.config.width / 2, 670, 'TRY AND BEAT YOUR SCORE', { fontFamily: "VCR", fontSize: '16pt'}).setOrigin(0.5);
+            this.playAgain.setInteractive({ useHandCursor: true });
+            this.playAgain.on('pointerdown', () => {location.reload()});
 
 
 
