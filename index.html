@@ -199,7 +199,7 @@
             
             
             
-            this.scene.launch(welcomeScene);
+            this.scene.launch(gameOverScene);
         }
         
         
@@ -983,8 +983,12 @@
 
             leaderBoard.setUser(usernameReal);
 
-            var highScore = await leaderBoard.getScore();
-            highScore = highScore.score;
+            var highScore;
+
+            if (newUser == false) {
+                highScore = await leaderBoard.getScore();
+                highScore = highScore.score;
+            }
 
             if (newUser == true || score > highScore) {
                 this.add.text(game.config.width / 2, 270, 'NEW HIGH SCORE!', { fontFamily: "VCR", fontSize: '18pt'}).setOrigin(0.5);
@@ -999,12 +1003,10 @@
             this.add.text(game.config.width / 2, 220, 'HIGH SCORE: ' + highScore, { fontFamily: "VCR", fontSize: '16pt'}).setOrigin(0.5);
             this.add.text(game.config.width / 2, 240, 'RANK: ' + rank, { fontFamily: "VCR", fontSize: '16pt'}).setOrigin(0.5);
 
-            
+            await timer(500);
             retrieveScores();
 
-            if (scoresRetrieved[rank - 1].userID == usernameReal) {
-                scoresRetrieved[rank - 1].score = score;
-            }
+            
 
 
             var newCellObject = function (scene, cell) {
