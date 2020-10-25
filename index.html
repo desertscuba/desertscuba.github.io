@@ -2,7 +2,7 @@
 <html lang="en"> 
 <head> 
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=0.9">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Game Over</title>
     <script src="//cdn.jsdelivr.net/npm/phaser@3.24.1/dist/phaser.min.js"></script>  
     
@@ -316,7 +316,8 @@
 
             this.music = this.sound.add('song');
 
-            this.arrow = this.add.text(game.config.width / 2, 150, '→', { fontFamily: "VCR", fontSize: '32pt' }).setOrigin(0.5);            var ins1 = this.add.image(game.config.width / 2, 100, 'ins1');
+            this.arrow = this.add.text(game.config.width / 2, 150, '→', { fontFamily: "VCR", fontSize: '32pt' }).setOrigin(0.5);
+            var ins1 = this.add.image(game.config.width / 2, 100, 'ins1').setScale(0.8);
             this.alphaIndexArrow = 0.04;
 
             this.time.addEvent({ delay: 30, callback: pulseArrow, callbackScope: this, loop: true });
@@ -330,9 +331,9 @@
 
 
 
-            var ins2 = this.add.image(game.config.width / 2, 100, 'ins2');
+            var ins2 = this.add.image(game.config.width / 2, 100, 'ins2').setScale(0.8);
             var ins3 = this.add.image(game.config.width / 2, 100, 'ins3').setScale(0.25);
-            var ins4 = this.add.image(game.config.width / 2, 100, 'ins4');
+            var ins4 = this.add.image(game.config.width / 2, 100, 'ins4').setScale(0.8);
             ins2.visible = false;
             ins3.visible = false;
             ins4.visible = false;
@@ -685,7 +686,7 @@
         gameOverScene.create = function() {
             this.backdrop = this.add.graphics({ fillStyle: { color: 0x000000} }).fillRoundedRect(290, 38, 395, 630, 15);
             this.backdrop.alpha = 0;
-            this.gameoversign = this.add.image(game.config.width / 2, game.config.height / 2, 'gameoversign');
+            this.gameoversign = this.add.image(game.config.width / 2, game.config.height / 2, 'gameoversign').setScale(0.8);
 
             async function gameOverStill() {
             await timer(2000);
