@@ -7,7 +7,6 @@
     <script src="//cdn.jsdelivr.net/npm/phaser@3.24.1/dist/phaser.min.js"></script>  
     
 
-
     <style type="text/css" media="screen, print">
         @font-face {
           font-family: "VCR";
@@ -136,6 +135,7 @@
         var added = false;
         var movePlatforms = false;
         var scaleIndex = 1;
+        var pressedPlay = false;
         
 
 
@@ -350,8 +350,11 @@
                         instructionsScene.arrow.setScale(0.75);
                         instructionsScene.arrow.y = 170;
                         this.input.on('pointerdown', () => {
-                            instructionsScene.music.play();
-                            this.time.addEvent({ delay: 16, callback: checkPlaying, callbackScope: this, loop: true });
+                            if (pressedPlay == false) {
+                                pressedPlay = true;
+                                instructionsScene.music.play();
+                                this.time.addEvent({ delay: 16, callback: checkPlaying, callbackScope: this, loop: true });
+                        }
             });
             });
             });
