@@ -72,7 +72,6 @@
             type: Phaser.AUTO,
             width: 970,
             height: 686,
-            parent: "phaserdiv",
             physics: {
                 default: 'arcade',
                 arcade: {
@@ -86,6 +85,7 @@
             disableWebAudio: true //web audio doesn't play with silent mode on
             },
             scale: {
+                parent: "phaserdiv",
                 mode: Phaser.Scale.HEIGHT_CONTROLS_WIDTH, //Works in portrait and landscape
                 autoCenter: Phaser.Scale.CENTER_BOTH,
             },
@@ -190,7 +190,7 @@
             
             
             
-            this.scene.launch(gameOverScene);
+            this.scene.launch(welcomeScene);
         }
         
         
