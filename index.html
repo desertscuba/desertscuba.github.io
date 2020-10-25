@@ -949,6 +949,7 @@
         })
 
             inputText.on('textchange', function(inputText, e){
+                this.takenError.visible = false;
                 inputText.setText(inputText.text.substr(0, previousTextLength + 1).toUpperCase());
                 if (inputText.text.length > this.maximumChars) {
                     inputText.setText(inputText.text.substr(0, this.maximumChars));
