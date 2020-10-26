@@ -1035,7 +1035,7 @@
             cell.setContainer(newCellObject(this, cell));
             //console.log('Cell ' + cell.index + ' visible');
         };
-        var table = this.add.rexGridTable(game.config.width / 2, 470, 310, 340, {
+        var table = this.add.rexGridTable(game.config.width / 2, 465, 310, 335, {
             cellWidth: 310,
             cellHeight: 40,
             cellsCount: scoresRetrieved.length,
@@ -1065,6 +1065,7 @@
 
         this.table = table;
 
+            this.add.text(game.config.width / 2, 650, '↓', { fontFamily: "VCR", fontSize: '14pt'}).setOrigin(0.5);
 
 
             this.playAgain = this.add.text(game.config.width / 2, 675, 'BEAT YOUR SCORE', { fontFamily: "VCR", fontSize: '16pt', backgroundColor: '#ba0000'}).setOrigin(0.5);
