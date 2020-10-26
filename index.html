@@ -586,8 +586,8 @@
 
 
 
-             camera.shake(1000, 0.005);
-             tsCamera.shake(1000, 0.005);
+             camera.shake(1000, 0.008);
+             tsCamera.shake(1000, 0.008);
 
 
             
@@ -610,7 +610,7 @@
                     this.platformA[x] = this.physics.add.sprite(posX + ((x + 1) * 220), game.config.height / 2, 'platform');
                     this.platformA[x].setImmovable(true);
                     this.platformA[x].setFrictionX(0);
-                    //this.platformA[x].body.friction.y = 1;
+                    this.platformA[x].body.friction.y = 1;
                     this.platformA[x].setVelocityX(-options.speed);
                     this.platformGroup[platformIndex].add(this.platformA[x]);
                     this.platformA[x].displayWidth = 200;
@@ -639,19 +639,23 @@
 
                 nextPlatformDistance[platformIndex] = Phaser.Math.Between(options.spawnRange[0], options.spawnRange[1]);
                 var offset = Phaser.Math.Between(-platformWidth / 2, platformWidth / 2);
-
+                var randomChoice = Phaser.Math.Between(1, 100)
                     
-                        if (Phaser.Math.Between(1, 100) <= 70) {
+                        if (randomChoice <= 70) {
                         for (x = 0; x < Phaser.Math.Between(1, 4); x++) {
                         var star = this.physics.add.sprite(posX + Phaser.Math.Between(-platformWidth / 2, platformWidth / 2), posY - 20, 'star');
                         star.setImmovable(true);
                         star.setVelocityX(-options.speed);
+                        if (randomChoice <= 5) {
+                            star.setTint(0xFF0000);
+                        }
+
                         this.starGroup.add(star);
                         }
                     }
                     
 
-                    if (Phaser.Math.Between(1, 100) <= 25) {
+                    if (randomChoice <= 25) {
                         let floorStar = this.physics.add.sprite(posX + offset, 580, 'star');
                         floorStar.setImmovable(true);
                         floorStar.setVelocityX(-options.speed);
@@ -858,7 +862,11 @@
             star.disableBody(true, true);
 
             //  Add and update the score
-            score += 2;
+            if (star.isTinted) {
+                score += 10;
+            } else {
+                score += 2;
+            }
             scoreText.setText('Score: ' + score);
 
         }
