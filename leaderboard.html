@@ -1,0 +1,182 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Game Over</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.24.1/dist/phaser.min.js"></script>  
+    
+
+    <style type="text/css" media="screen, print">
+        @font-face {
+          font-family: "VCR";
+          src: url("assets/VCR_OSD_MONO.ttf") format("truetype");
+        }
+    </style>
+
+    <!--<div style="font-family: VCR;">.</div> -->
+
+</head>
+ 
+<style>
+    html,
+    body {
+        margin: 0;
+        height: 100%;
+        background: black;
+        }
+</style>
+
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-firestore.js"></script>
+
+
+
+
+<body>
+
+<div id="phaserdiv"></div>
+
+<script type="text/javascript">
+
+var leaderboardScene = new Phaser.Scene('leaderboardScene');
+
+    
+
+        var config = {
+            type: Phaser.AUTO,
+            width: 970,
+            height: 686,
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    debug: false
+                }
+            },
+            dom: {
+            createContainer: true
+            },
+            audio: {
+            disableWebAudio: true //web audio doesn't play with silent mode on
+            },
+            scale: {
+                parent: "phaserdiv",
+                mode: Phaser.Scale.HEIGHT_CONTROLS_WIDTH, //Works in portrait and landscape
+                autoCenter: Phaser.Scale.CENTER_BOTH,
+            },
+            scene: [leaderboardScene]
+        };
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBkgjnXTIy4uFe76fOdMKXdcsFYrwJGEbo",
+            authDomain: "game-over-7a4bb.firebaseapp.com",
+            databaseURL: "https://game-over-7a4bb.firebaseio.com",
+            projectId: "game-over-7a4bb",
+            storageBucket: "game-over-7a4bb.appspot.com",
+            messagingSenderId: "415474068057",
+            appId: "1:415474068057:web:37f17b6ead89963d38df48"
+};
+
+        firebase.initializeApp(firebaseConfig);
+
+    
+        window.focus();
+
+        var game = new Phaser.Game(config);
+
+leaderboardScene.preload = function() {
+            this.load.plugin('rexfirebaseplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexfirebaseplugin.min.js', true);
+            this.load.plugin('rexgridtableplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexgridtableplugin.min.js', true);
+            this.load.plugin('rexscrollerplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexscrollerplugin.min.js', true);
+            this.add.text(0, 0, '', { fontFamily: "VCR"});
+
+}
+
+leaderboardScene.create = async function() {
+
+    this.add.text(game.config.width / 2, 160, 'LEADERBOARD', { fontFamily: "VCR", fontSize: '30pt'}).setOrigin(0.5);
+
+    var leaderBoard = this.plugins.get('rexfirebaseplugin').add.leaderBoard({
+            root: 'scores',
+            // timeFilters: false,
+            // timeFilterType: 'year',
+            // pageItemCount: 100,
+            // boardID: undefined,
+            // tag: undefined
+            });
+  
+
+    var scoresRetrieved = await leaderBoard.loadFirstPage();
+
+    while (!(leaderBoard.isLastPage)) {
+        scoresRetrieved = scoresRetrieved.concat(await leaderBoard.loadNextPage());
+    }
+
+    
+
+
+    var newCellObject = function (scene, cell) {
+    // var bg = scene.add.graphics()
+    //     .fillStyle(0x000000)
+    //     .fillRect(2, 2, 310 - 2, 40 - 2);
+    var txtRank = scene.add.text(5, 5, (cell.index + 1) + '.', {fontFamily: "VCR", fontSize: '14pt'});
+    var txtUsername = scene.add.text(50, 5, scoresRetrieved[cell.index].userID, {fontFamily: "VCR", fontSize: '14pt'});
+    var txtScore = scene.add.text(240, 5, scoresRetrieved[cell.index].score, {fontFamily: "VCR", fontSize: '14pt'});
+    var container = scene.add.container(0, 0, [txtRank, txtUsername, txtScore]);
+    return container;
+}
+
+var onCellVisible = function (cell) {
+    cell.setContainer(newCellObject(this, cell));
+    //console.log('Cell ' + cell.index + ' visible');
+};
+var table = this.add.rexGridTable(game.config.width / 2, 465, 310, 335, {
+    cellWidth: 310,
+    cellHeight: 40,
+    cellsCount: scoresRetrieved.length,
+    columns: 1,
+    cellVisibleCallback: onCellVisible.bind(this),
+    clamplTableOXY: false
+});
+
+// draw bound
+// this.add.graphics()
+//     .lineStyle(3, 0xff0000)
+//     .strokeRectShape(table.getBounds());
+
+//drag table content
+table.scroller = this.plugins.get('rexscrollerplugin').add(table, {
+        bounds: [
+            table.bottomTableOY,
+            table.topTableOY
+        ],
+        value: table.topTableOY,
+        slidingDeceleration: 10000,
+        backDeceleration: 2000,
+        valuechangeCallback: function (newValue) {
+            table.setTableOY(newValue).updateTable();
+        }
+    });
+
+this.table = table;
+
+    this.add.text(game.config.width / 2, 650, '↓', { fontFamily: "VCR", fontSize: '14pt'}).setOrigin(0.5);
+
+
+
+
+
+
+
+   
+    
+
+    
+
+}
+
+</script>
+    
+</body>
+</html>
