@@ -610,7 +610,6 @@
                     this.platformA[x] = this.physics.add.sprite(posX + ((x + 1) * 220), game.config.height / 2, 'platform');
                     this.platformA[x].setImmovable(true);
                     this.platformA[x].setFrictionX(0);
-                    this.platformA[x].body.friction.y = 1;
                     this.platformA[x].setVelocityX(-options.speed);
                     this.platformGroup[platformIndex].add(this.platformA[x]);
                     this.platformA[x].displayWidth = 200;
